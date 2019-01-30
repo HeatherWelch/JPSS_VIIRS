@@ -128,3 +128,10 @@ dates2<-seq(as.Date("2015-08-01"), as.Date("2015-12-01"), by = "day",format="%Y/
 data_product="modis_1Day"
 lapply(dates1,FUN=run_ecocast,data_product=data_product)
 lapply(dates2,FUN=run_ecocast,data_product=data_product)
+
+#### modis 2012 and 2015; 8 day ####
+dates1<-seq(as.Date("2012-08-01"), as.Date("2012-12-01"), by = "day",format="%Y/%mm/%dd")
+dates2<-seq(as.Date("2015-08-01"), as.Date("2015-12-01"), by = "day",format="%Y/%mm/%dd")
+data_product="modis_8Day"
+lapply(dates1,FUN=run_ecocast,data_product=data_product)
+lapply(dates2,FUN=run_ecocast,data_product=data_product)
