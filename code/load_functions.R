@@ -47,5 +47,9 @@ pkgTest("mlbench")
 pkgTest("cowplot")
 pkgTest("gdata")
 pkgTest("plotly")
+pkgTest("chron")
+
+
+
 
 
