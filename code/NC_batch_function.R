@@ -77,6 +77,13 @@ viirs_unpack=function(template_native,nc,output_dir,template){
   lat <- ncvar_get(ncin, "latitude", verbose = F) # define latitude
   nlat <- dim(lat)
   t <- ncvar_get(ncin, "time") # define time field
+  print("Formatting column names")
+  date1=as.character(as.POSIXlt(t,origin='1970-01-01',tz= "UTC"))
+  date0=lapply(date1,function(x)(gsub(" 12:00:00","",x))) %>% unlist() 
+  if(!date0[1]%in% list.files(output_dir)){
+  #if(!date0[1]%in% list.files(output_dir)|!date0[2]%in% list.files(output_dir)){
+  #if(grepl(date0[1],list.files(output_dir)))
+    print(paste0(date0, " is missing from satellite folder, unpacking now"))
   tunits <- ncatt_get(ncin, "time", "units") # get time units
   nt <- dim(t)
   tmp.array <- ncvar_get(ncin, dname)
@@ -115,6 +122,7 @@ viirs_unpack=function(template_native,nc,output_dir,template){
       writeRaster(r1,paste(path1,"/l.blendChl",sep=""),overwrite=TRUE)
     }
   }
+  } else{
+    print(paste0(date0," is not missing from satellite folder"))}
 }
-
   

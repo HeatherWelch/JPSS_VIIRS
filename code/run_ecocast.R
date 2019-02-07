@@ -1,6 +1,7 @@
 ### running ecocast on the downloaded data
 
 run_ecocast=function(data_product,date,datapath){
+  get_date=as.Date(date)
   
   ## paths for JPSS ####
   envdir2=paste(datapath,"/",data_product,"/Satellite/",sep="") 
@@ -10,12 +11,15 @@ run_ecocast=function(data_product,date,datapath){
   if(!dir.exists(ecocastdir)){dir.create(ecocastdir)}
   outdir_M=paste(ecocastdir,"mean/",sep="") 
   if(!dir.exists(outdir_M)){dir.create(outdir_M)}
-  outdir_M=paste(ecocastdir,"mean/latest/",sep="") 
-  if(!dir.exists(outdir_M)){dir.create(outdir_M)}
+  outdir_M1=paste(ecocastdir,"mean/latest/",sep="") 
+  if(!dir.exists(outdir_M1)){dir.create(outdir_M1)}
   outdir_S=paste(ecocastdir,"se/",sep="") 
   if(!dir.exists(outdir_S)){dir.create(outdir_S)}
   outdir_S=paste(ecocastdir,"se/latest/",sep="") 
   if(!dir.exists(outdir_S)){dir.create(outdir_S)}
+  
+  filelist=list.files(outdir_M,pattern=as.character(get_date),full.names = TRUE)
+  if(length(filelist)==0){
   
   blshObs=paste(outdir,"blshObs/",sep="")
   if(!dir.exists(blshObs)){dir.create(blshObs)}
@@ -28,6 +32,8 @@ run_ecocast=function(data_product,date,datapath){
   lbst=paste(outdir,"lbst/",sep="")
   if(!dir.exists(lbst)){dir.create(lbst)}
   finaldir_data_product=paste(envdir2,get_date,sep="")
+  
+  if(file.exists(finaldir_data_product)){
   
   blshObs=paste(outdir,"blshObs/predCIs/",sep="")
   if(!dir.exists(blshObs)){dir.create(blshObs)}
@@ -48,8 +54,8 @@ run_ecocast=function(data_product,date,datapath){
   envdir=paste(path,"/SpatialPredictions_EnvData/Satellite/",sep="") 
   finaldir=paste(envdir,get_date,sep="")
   source("/Volumes/EcoCast_SeaGate/EcoCast_HW/EcoCastGit_private/Code/Operationalizing_code_V3/2_load_libraries.R",chdir = TRUE)
-  source("/Volumes/EcoCast_SeaGate/EcoCast_HW/EcoCastGit_private/Code/Operationalizing_code_V3/4_predict_CIs.R",chdir = TRUE)
-  source("/Volumes/EcoCast_SeaGate/EcoCast_HW/EcoCastGit_private/Code/Operationalizing_code_V3/5_plot_EcoCast.R",chdir = TRUE)
+  source("/Users/heatherwelch/Dropbox/JPSS/JPSS_VIIRS/code/5_plot_EcoCast.R")
+  source("/Volumes/EcoCast_SeaGate/EcoCast_HW/EcoCastGit_private/Code/Operationalizing_code_V3/4_predict_CIs.R")
   
   # C. Define species weightings ####
   namesrisk<-c("Blue shark bycatch","Blue sharks","Sea lions","Leatherbacks","Swordfish")
@@ -70,7 +76,7 @@ run_ecocast=function(data_product,date,datapath){
   studyarea=readOGR(dsn=staticdir,layer="sa_square_coast3")
   
   ############ 2. Define time and dynamic directories ####
-  get_date=date
+  #get_date=date
   print(get_date)
   most_recent=as.character(get_date-1) ##change for each user
   get_date_composite=get_date-4
@@ -106,8 +112,8 @@ run_ecocast=function(data_product,date,datapath){
   for(missing in FileList_missing){ # for each missing dynamic variable
     print(paste(missing," is missing from ",get_date,sep=""))
     final_name=gsub(".grd","",missing) # get rid of .grd to match move_file function (need the grid to differentiate between the means and sds)
-    path=move_file(final_name=final_name) # get the pathway of the most recent version of each dynamic variable and..
-    FileList_final=unlist(list(FileList_final,path)) # add it to our final path list
+    pathA=move_file(final_name=final_name) # get the pathway of the most recent version of each dynamic variable and..
+    FileList_final=unlist(list(FileList_final,pathA)) # add it to our final path list
   }
   
   a=lapply(FileList_final,function(x)unlist(strsplit(x,"/")))
@@ -118,29 +124,42 @@ run_ecocast=function(data_product,date,datapath){
   
   predCIs_master(get_date=get_date,envdir = envdir,moddir=moddir,outdir = outdir,path = path,final_path_list=return_list)
   Run_ecocast(get_date=get_date,moddir=moddir,outdir = outdir,ecocastdir = ecocastdir,namesrisk=namesrisk,ecocastrisk=ecocastrisk,bycatchrisk=bycatchrisk,final_path_list=return_list,logodir=logodir,studyarea=studyarea,staticdir=staticdir)
-  
+  }
+  }
 }
 
-#### modis 2012 and 2015; 1 day ####
-dates1<-seq(as.Date("2012-08-01"), as.Date("2012-12-01"), by = "day",format="%Y/%mm/%dd")
-dates2<-seq(as.Date("2015-08-01"), as.Date("2015-12-01"), by = "day",format="%Y/%mm/%dd")
-data_product="modis_1Day"
-lapply(dates1,FUN=run_ecocast,data_product=data_product)
-lapply(dates2,FUN=run_ecocast,data_product=data_product)
+# #### modis 2012 and 2015; 1 day ####
+# dates1<-seq(as.Date("2012-08-01"), as.Date("2012-12-01"), by = "day",format="%Y/%mm/%dd")
+# dates2<-seq(as.Date("2015-08-01"), as.Date("2015-12-01"), by = "day",format="%Y/%mm/%dd")
+# data_product="modis_1Day"
+# lapply(dates1,FUN=run_ecocast,data_product=data_product)
+# lapply(dates2,FUN=run_ecocast,data_product=data_product)
 
-#### modis 2012 and 2015; 8 day ####
-dates1<-seq(as.Date("2012-08-01"), as.Date("2012-12-01"), by = "day",format="%Y/%mm/%dd")
-dates2<-seq(as.Date("2015-08-01"), as.Date("2015-12-01"), by = "day",format="%Y/%mm/%dd")
+#### modis 2015 - 2018; 8 day ####
+a<-seq(as.Date("2015-08-01"), as.Date("2016-01-01"), by = "day",format="%Y/%mm/%dd") %>% as.character()
+b<-seq(as.Date("2016-08-01"), as.Date("2017-01-01"), by = "day",format="%Y/%mm/%dd") %>% as.character()
+c<-seq(as.Date("2017-08-01"), as.Date("2018-01-01"), by = "day",format="%Y/%mm/%dd") %>% as.character()
+d<-seq(as.Date("2018-08-01"), as.Date("2019-01-01"), by = "day",format="%Y/%mm/%dd") %>% as.character()
+dates=list(a,b,c,d) %>% unlist()
 data_product="modis_8Day"
-datapath="/Users/EcoCast/Dropbox/JPSS/"
-lapply(dates1,FUN=run_ecocast,data_product=data_product,datapath=datapath)
-lapply(dates2,FUN=run_ecocast,data_product=data_product)
+datapath="/Users/heatherwelch/Dropbox/JPSS"
+lapply(dates,FUN=run_ecocast,data_product=data_product,datapath=datapath)
 
-#### viirs 2015; 1 day ####
-#dates2<-seq(as.Date("2015-08-01"), as.Date("2015-12-01"), by = "day",format="%Y/%mm/%dd") 
-dates2<-seq(as.Date("2015-10-05"), as.Date("2015-12-01"), by = "day",format="%Y/%mm/%dd") ##missing 2015-10-04
-dates2<-seq(as.Date("2015-10-22"), as.Date("2015-12-01"), by = "day",format="%Y/%mm/%dd") ##missing 2015-10-21
-dates2<-seq(as.Date("2015-11-16"), as.Date("2015-12-01"), by = "day",format="%Y/%mm/%dd") ##missing 2015-11-13, 11-14, 11-15
-data_product="viirs_1Day"
-datapath="/Users/heatherwelch/Dropbox/JPSS/"
-lapply(dates2,FUN=run_ecocast,data_product=data_product)
+#### viirs 2015 - 2018; 8 day ####
+a<-seq(as.Date("2015-08-01"), as.Date("2016-01-01"), by = "day",format="%Y/%mm/%dd") %>% as.character()
+b<-seq(as.Date("2016-08-01"), as.Date("2017-01-01"), by = "day",format="%Y/%mm/%dd") %>% as.character()
+c<-seq(as.Date("2017-08-01"), as.Date("2018-01-01"), by = "day",format="%Y/%mm/%dd") %>% as.character()
+d<-seq(as.Date("2018-08-01"), as.Date("2019-01-01"), by = "day",format="%Y/%mm/%dd") %>% as.character()
+dates=list(a,b,c,d) %>% unlist()
+data_product="viirs_8Day"
+datapath="/Users/heatherwelch/Dropbox/JPSS"
+lapply(dates,FUN=run_ecocast,data_product=data_product,datapath=datapath)
+
+# #### viirs 2015; 1 day ####
+# #dates2<-seq(as.Date("2015-08-01"), as.Date("2015-12-01"), by = "day",format="%Y/%mm/%dd") 
+# dates2<-seq(as.Date("2015-10-05"), as.Date("2015-12-01"), by = "day",format="%Y/%mm/%dd") ##missing 2015-10-04
+# dates2<-seq(as.Date("2015-10-22"), as.Date("2015-12-01"), by = "day",format="%Y/%mm/%dd") ##missing 2015-10-21
+# dates2<-seq(as.Date("2015-11-16"), as.Date("2015-12-01"), by = "day",format="%Y/%mm/%dd") ##missing 2015-11-13, 11-14, 11-15
+# data_product="viirs_1Day"
+# datapath="/Users/heatherwelch/Dropbox/JPSS/"
+# lapply(dates2,FUN=run_ecocast,data_product=data_product)
