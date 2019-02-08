@@ -1,0 +1,126 @@
+### ideas for how to quantify differece
+
+source("/Users/heatherwelch/Dropbox/JPSS/JPSS_VIIRS/code/load_functions.R")
+library(padr)
+library(zoo)
+
+
+modisDir="/Users/heatherwelch/Dropbox/JPSS/modis_8Day/Satellite"
+viirsDir="/Users/heatherwelch/Dropbox/JPSS/viirs_8Day/Satellite"
+pmlEsaDir="/Users/heatherwelch/Dropbox/JPSS/pmlEsa_8Day/Satellite"
+
+path = "/Volumes/EcoCast_SeaGate/ERD_DOM/EcoCast_CodeArchive"
+staticdir=paste0(path,"/static_variables/")
+studyarea=readOGR(dsn=staticdir,layer="sa_square_coast3")
+
+a<-seq(as.Date("2015-08-01"), as.Date("2019-01-01"), by = "day",format="%Y/%mm/%dd") %>% as.character() %>% as.data.frame() 
+colnames(a)="full_TS"
+a=a %>% mutate(full_TS=as.Date(full_TS))
+
+#1. time series of spatial average ####
+sat_m=list.files(modisDir,full.names = T,recursive = T,pattern = ".grd") %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea))
+dates_m=list.files(modisDir,full.names = T,recursive = T,pattern = ".grd") %>% gsub("/Users/heatherwelch/Dropbox/JPSS/modis_8Day/Satellite/","",.) %>% gsub("/l.blendChl.grd","",.)
+names(sat_m)=dates_m
+m_stats=cellStats(sat_m,stat="mean")
+b=m_stats %>% as.data.frame() %>% mutate(date=as.Date(dates_m)) 
+colnames(b)=c("chla","date")
+b=b%>% filter(chla>-4) %>% mutate(year=as.factor(strtrim(as.character(date),4))) %>% filter(year!=2012&year!=2019)%>% mutate(month=as.factor(substr(as.character(date),6,7)))%>% filter(month!="01"&month!="07")
+m_df=b %>% mutate(sensor="MODIS") #%>% left_join(a,.,by=c("full_TS"="date"))
+
+sat_v=list.files(viirsDir,full.names = T,recursive = T,pattern = ".grd") %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea))
+dates_v=list.files(viirsDir,full.names = T,recursive = T,pattern = ".grd") %>% gsub("/Users/heatherwelch/Dropbox/JPSS/viirs_8Day/Satellite/","",.) %>% gsub("/l.blendChl.grd","",.)
+names(sat_v)=dates_v
+v_stats=cellStats(sat_v,stat="mean")
+b=v_stats %>% as.data.frame() %>% mutate(date=as.Date(dates_v)) 
+colnames(b)=c("chla","date")
+b=b%>% filter(chla>-4) %>% mutate(year=as.factor(strtrim(as.character(date),4))) %>% filter(year!=2012&year!=2019)%>% mutate(month=as.factor(substr(as.character(date),6,7)))%>% filter(month!="01"&month!="07")
+v_df=b %>% mutate(sensor="VIIRS") #%>% left_join(a,.,by=c("full_TS"="date"))
+
+sat_pml=list.files(pmlEsaDir,full.names = T,recursive = T,pattern = ".grd") %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea))
+dates_pml=list.files(pmlEsaDir,full.names = T,recursive = T,pattern = ".grd") %>% gsub("/Users/heatherwelch/Dropbox/JPSS/pmlEsa_8Day/Satellite/","",.) %>% gsub("/l.blendChl.grd","",.)
+names(sat_pml)=dates_pml
+pml_stats=cellStats(sat_pml,stat="mean")
+b=pml_stats %>% as.data.frame() %>% mutate(date=as.Date(dates_pml)) 
+colnames(b)=c("chla","date")
+b=b%>% filter(chla>-4) %>% mutate(year=as.factor(strtrim(as.character(date),4))) %>% filter(year!=2012&year!=2019)%>% mutate(month=as.factor(substr(as.character(date),6,7)))%>% filter(month!="01"&month!="07")
+pml_df=b %>% mutate(sensor="Blended") #%>% left_join(a,.,by=c("full_TS"="date"))
+
+master=do.call("rbind",list(m_df,v_df,pml_df))
+master$sensor=as.factor(master$sensor)
+
+# ggplot(master,aes(x=date,y=chla))+geom_line(aes(group=interaction(sensor,year),color=sensor))+geom_point(aes(color=sensor))+
+#   scale_x_date(date_breaks="year",date_labels = "%Y",date_minor_breaks = "months",limits = as.Date(c('2015-08-01','2019-01-01')))+
+#   scale_color_manual("Sensor",values=c("Blended"="darkgoldenrod","MODIS"="coral1","VIIRS"="gray"))
+
+lineplot=ggplot(master,aes(x=date,y=chla))+geom_line(aes(group=sensor,color=sensor),size=.3)+geom_point(aes(color=sensor),size=.6)+
+  scale_x_date(date_breaks="month",date_labels = "%b",date_minor_breaks = "months")+
+  scale_color_manual("Sensor",values=c("Blended"="darkgoldenrod","MODIS"="coral1","VIIRS"="gray"))+
+  facet_wrap(~year, scales="free_x", nrow=1)+labs(x="Date")+labs(y="Chlorophyla (mg^-3)")+theme(legend.position=c(.1,.9),legend.justification = c(.9,.9))+
+  theme(axis.text = element_text(size=6),axis.title = element_text(size=6),legend.text=element_text(size=6),legend.title = element_text(size=6),strip.text.x = element_text(size = 6), strip.background = element_blank())+
+  theme(legend.key.size = unit(.5,'lines'))
+
+
+lineplot
+
+outputDir="/Users/heatherwelch/Dropbox/JPSS/plots/"
+datatype="chla"
+
+png(paste(outputDir,datatype,"_line.png",sep=''),width=18,height=6,units='cm',res=400)
+par(ps=10)
+par(mar=c(4,4,1,1))
+par(cex=1)
+lineplot
+dev.off()
+
+
+#1.temporal average ####
+modis=list.files(modisDir,full.names = T,recursive = T,pattern = ".grd") %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea)) %>% calc(.,mean,na.rm=T)
+viirs=list.files(viirsDir,full.names = T,recursive = T,pattern = ".grd") %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea)) %>% calc(.,mean,na.rm=T)
+blend=list.files(pmlEsaDir,full.names = T,recursive = T,pattern = ".grd") %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea)) %>% calc(.,mean,na.rm=T)
+
+master=stack(modis,viirs,blend)
+names(master)=c("modis","viirs","blend")
+outputDir="/Users/heatherwelch/Dropbox/JPSS/plots/"#;dir.create(outputDir)
+datatype="chla"
+PlotPNGs(stack=master,datatype = datatype,outputDir = outputDir)
+
+PlotPNGs<-function(stack,datatype,outputDir){
+  
+  H=maxValue(stack) %>% max()
+  L=minValue(stack) %>% min()
+  zlimits=c(L,H)
+  
+  EcoCols<-colorRampPalette(c("red","orange","white","cyan","blue"))
+  ChlorCols<-colorRampPalette(brewer.pal(9,'YlGn'))
+  SpCols<-colorRampPalette(brewer.pal(9,'GnBu'))
+  
+  ####### produce png ####
+  png(paste(outputDir,datatype,".png",sep=''),width=18,height=6,units='cm',res=400)
+  par(mar=c(3,3,.5,.5),las=1,font=2)
+  par(mfrow=c(1,3))
+  
+  if(datatype=="chla") {
+    col=ChlorCols(255)
+  }
+  
+  image.plot(stack[[1]],col=col,xlim=c(-130,-115),ylim=c(30,47),zlim=zlimits)
+  maps::map('worldHires',add=TRUE,col=grey(0.7),fill=TRUE)
+  contour(stack[[1]], add=TRUE, col="black",levels=c(-2,-1,0))
+  text(-122,45,"MODIS",adj=c(0,0),cex=1.5)
+  
+  image.plot(stack[[2]],col=col,xlim=c(-130,-115),ylim=c(30,47),zlim=zlimits)
+  maps::map('worldHires',add=TRUE,col=grey(0.7),fill=TRUE)
+  contour(stack[[2]], add=TRUE, col="black",levels=c(-2,-1,0))
+  text(-122,45,"VIIRS",adj=c(0,0),cex=1.5)
+  
+  image.plot(stack[[3]],col=col,xlim=c(-130,-115),ylim=c(30,47),zlim=zlimits)
+  maps::map('worldHires',add=TRUE,col=grey(0.7),fill=TRUE)
+  contour(stack[[3]], add=TRUE, col="black",levels=c(-2,-1,0))
+  text(-122,45,"Blended",adj=c(0,0),cex=1.5)
+
+  
+  box()
+  dev.off()
+  
+}
+  
