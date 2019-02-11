@@ -5,9 +5,9 @@ library(padr)
 library(zoo)
 
 
-modisDir="/Users/heatherwelch/Dropbox/JPSS/modis_8Day/Satellite"
-viirsDir="/Users/heatherwelch/Dropbox/JPSS/viirs_8Day/Satellite"
-pmlEsaDir="/Users/heatherwelch/Dropbox/JPSS/pmlEsa_8Day/Satellite"
+modisDir="/Users/heatherwelch/Dropbox/JPSS/modis_8Day/EcoCastRuns/lbst/predCIs"
+viirsDir="/Users/heatherwelch/Dropbox/JPSS/viirs_8Day/EcoCastRuns/lbst/predCIs"
+pmlEsaDir="/Users/heatherwelch/Dropbox/JPSS/pmlEsa_8Day/EcoCastRuns/lbst/predCIs"
 
 path = "/Volumes/EcoCast_SeaGate/ERD_DOM/EcoCast_CodeArchive"
 staticdir=paste0(path,"/static_variables/")
@@ -18,8 +18,8 @@ colnames(a)="full_TS"
 a=a %>% mutate(full_TS=as.Date(full_TS))
 
 #1. time series of spatial average, just mean ####
-sat_m=list.files(modisDir,full.names = T,recursive = T,pattern = ".grd") %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea))
-dates_m=list.files(modisDir,full.names = T,recursive = T,pattern = ".grd") %>% gsub("/Users/heatherwelch/Dropbox/JPSS/modis_8Day/Satellite/","",.) %>% gsub("/l.blendChl.grd","",.)
+sat_m=list.files(modisDir,full.names = T,recursive = T,pattern = "mean.grd") %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea))
+dates_m=list.files(modisDir,full.names = T,recursive = T,pattern = "mean.grd") %>% gsub("/Users/heatherwelch/Dropbox/JPSS/modis_8Day/EcoCastRuns/lbst/predCIs/lbst_pa_","",.) %>% gsub("_mean.grd","",.)
 names(sat_m)=dates_m
 m_stats=cellStats(sat_m,stat="mean")
 b=m_stats %>% as.data.frame() %>% mutate(date=as.Date(dates_m)) 
@@ -27,8 +27,8 @@ colnames(b)=c("chla","date")
 b=b %>% mutate(year=as.factor(strtrim(as.character(date),4))) %>% filter(year!=2012&year!=2019)%>% mutate(month=as.factor(substr(as.character(date),6,7)))%>% filter(month!="01"&month!="07")
 m_df=b %>% mutate(sensor="MODIS") #%>% left_join(a,.,by=c("full_TS"="date"))
 
-sat_v=list.files(viirsDir,full.names = T,recursive = T,pattern = ".grd") %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea))
-dates_v=list.files(viirsDir,full.names = T,recursive = T,pattern = ".grd") %>% gsub("/Users/heatherwelch/Dropbox/JPSS/viirs_8Day/Satellite/","",.) %>% gsub("/l.blendChl.grd","",.)
+sat_v=list.files(viirsDir,full.names = T,recursive = T,pattern = "mean.grd") %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea))
+dates_v=list.files(viirsDir,full.names = T,recursive = T,pattern = "mean.grd") %>% gsub("/Users/heatherwelch/Dropbox/JPSS/viirs_8Day/EcoCastRuns/lbst/predCIs/lbst_pa_","",.) %>% gsub("_mean.grd","",.)
 names(sat_v)=dates_v
 v_stats=cellStats(sat_v,stat="mean")
 b=v_stats %>% as.data.frame() %>% mutate(date=as.Date(dates_v)) 
@@ -36,8 +36,8 @@ colnames(b)=c("chla","date")
 b=b %>% mutate(year=as.factor(strtrim(as.character(date),4))) %>% filter(year!=2012&year!=2019)%>% mutate(month=as.factor(substr(as.character(date),6,7)))%>% filter(month!="01"&month!="07")
 v_df=b %>% mutate(sensor="VIIRS") #%>% left_join(a,.,by=c("full_TS"="date"))
 
-sat_pml=list.files(pmlEsaDir,full.names = T,recursive = T,pattern = ".grd") %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea))
-dates_pml=list.files(pmlEsaDir,full.names = T,recursive = T,pattern = ".grd") %>% gsub("/Users/heatherwelch/Dropbox/JPSS/pmlEsa_8Day/Satellite/","",.) %>% gsub("/l.blendChl.grd","",.)
+sat_pml=list.files(pmlEsaDir,full.names = T,recursive = T,pattern = "mean.grd") %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea))
+dates_pml=list.files(pmlEsaDir,full.names = T,recursive = T,pattern = "mean.grd") %>% gsub("/Users/heatherwelch/Dropbox/JPSS/pmlEsa_8Day/EcoCastRuns/lbst/predCIs/lbst_pa_","",.) %>% gsub("_mean.grd","",.)
 names(sat_pml)=dates_pml
 pml_stats=cellStats(sat_pml,stat="mean")
 b=pml_stats %>% as.data.frame() %>% mutate(date=as.Date(dates_pml)) 
@@ -48,14 +48,10 @@ pml_df=b %>% mutate(sensor="Blended") #%>% left_join(a,.,by=c("full_TS"="date"))
 master=do.call("rbind",list(m_df,v_df,pml_df))
 master$sensor=as.factor(master$sensor)
 
-# ggplot(master,aes(x=date,y=chla))+geom_line(aes(group=interaction(sensor,year),color=sensor))+geom_point(aes(color=sensor))+
-#   scale_x_date(date_breaks="year",date_labels = "%Y",date_minor_breaks = "months",limits = as.Date(c('2015-08-01','2019-01-01')))+
-#   scale_color_manual("Sensor",values=c("Blended"="darkgoldenrod","MODIS"="coral1","VIIRS"="gray"))
-
 lineplot=ggplot(master,aes(x=date,y=chla))+geom_line(aes(group=sensor,color=sensor),size=.3)+geom_point(aes(color=sensor),size=.6)+
   scale_x_date(date_breaks="month",date_labels = "%b",date_minor_breaks = "months")+
   scale_color_manual("Sensor",values=c("Blended"="darkgoldenrod","MODIS"="coral1","VIIRS"="gray"))+
-  facet_wrap(~year, scales="free_x", nrow=1)+labs(x="Date")+labs(y="Chlorophyla (mg^-3)")+theme(legend.position=c(.1,.9),legend.justification = c(.9,.9))+
+  facet_wrap(~year, scales="free_x", nrow=1)+labs(x="Date")+labs(y="Leatherback habitat suitability")+theme(legend.position=c(.1,.35),legend.justification = c(.9,.9))+
   theme(axis.text = element_text(size=6),axis.title = element_text(size=6),legend.text=element_text(size=6),legend.title = element_text(size=6),strip.text.x = element_text(size = 6), strip.background = element_blank())+
   theme(legend.key.size = unit(.5,'lines'))
 
@@ -63,7 +59,7 @@ lineplot=ggplot(master,aes(x=date,y=chla))+geom_line(aes(group=sensor,color=sens
 lineplot
 
 outputDir="/Users/heatherwelch/Dropbox/JPSS/plots/"
-datatype="chla"
+datatype="lbst"
 
 png(paste(outputDir,datatype,"_line.png",sep=''),width=18,height=6,units='cm',res=400)
 par(ps=10)
@@ -75,8 +71,8 @@ dev.off()
 
 
 #1. time series of spatial average,  mean +/- SD ####
-sat_m=list.files(modisDir,full.names = T,recursive = T,pattern = ".grd") %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea))
-dates_m=list.files(modisDir,full.names = T,recursive = T,pattern = ".grd") %>% gsub("/Users/heatherwelch/Dropbox/JPSS/modis_8Day/Satellite/","",.) %>% gsub("/l.blendChl.grd","",.)
+sat_m=list.files(modisDir,full.names = T,recursive = T,pattern = "mean.grd") %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea))
+dates_m=list.files(modisDir,full.names = T,recursive = T,pattern = "mean.grd") %>% gsub("/Users/heatherwelch/Dropbox/JPSS/modis_8Day/EcoCastRuns/lbst/predCIs/lbst_pa_","",.) %>% gsub("_mean.grd","",.)
 names(sat_m)=dates_m
 m_stats=cellStats(sat_m,stat="mean")
 m_stats_SD=cellStats(sat_m,stat="sd")
@@ -87,8 +83,8 @@ b$lower=b$chla-m_stats_SD
 b=b %>% mutate(year=as.factor(strtrim(as.character(date),4))) %>% filter(year!=2012&year!=2019)%>% mutate(month=as.factor(substr(as.character(date),6,7)))%>% filter(month!="01"&month!="07")
 m_df=b %>% mutate(sensor="MODIS") #%>% left_join(a,.,by=c("full_TS"="date"))
 
-sat_v=list.files(viirsDir,full.names = T,recursive = T,pattern = ".grd") %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea))
-dates_v=list.files(viirsDir,full.names = T,recursive = T,pattern = ".grd") %>% gsub("/Users/heatherwelch/Dropbox/JPSS/viirs_8Day/Satellite/","",.) %>% gsub("/l.blendChl.grd","",.)
+sat_v=list.files(viirsDir,full.names = T,recursive = T,pattern = "mean.grd") %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea))
+dates_v=list.files(viirsDir,full.names = T,recursive = T,pattern = "mean.grd") %>% gsub("/Users/heatherwelch/Dropbox/JPSS/viirs_8Day/EcoCastRuns/lbst/predCIs/lbst_pa_","",.) %>% gsub("_mean.grd","",.)
 names(sat_v)=dates_v
 v_stats=cellStats(sat_v,stat="mean")
 v_stats_SD=cellStats(sat_v,stat="sd")
@@ -99,8 +95,8 @@ b$lower=b$chla-v_stats_SD
 b=b %>% mutate(year=as.factor(strtrim(as.character(date),4))) %>% filter(year!=2012&year!=2019)%>% mutate(month=as.factor(substr(as.character(date),6,7)))%>% filter(month!="01"&month!="07")
 v_df=b %>% mutate(sensor="VIIRS") #%>% left_join(a,.,by=c("full_TS"="date"))
 
-sat_pml=list.files(pmlEsaDir,full.names = T,recursive = T,pattern = ".grd") %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea))
-dates_pml=list.files(pmlEsaDir,full.names = T,recursive = T,pattern = ".grd") %>% gsub("/Users/heatherwelch/Dropbox/JPSS/pmlEsa_8Day/Satellite/","",.) %>% gsub("/l.blendChl.grd","",.)
+sat_pml=list.files(pmlEsaDir,full.names = T,recursive = T,pattern = "mean.grd") %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea))
+dates_pml=list.files(pmlEsaDir,full.names = T,recursive = T,pattern = "mean.grd") %>% gsub("/Users/heatherwelch/Dropbox/JPSS/pmlEsa_8Day/EcoCastRuns/lbst/predCIs/lbst_pa_","",.) %>% gsub("_mean.grd","",.)
 names(sat_pml)=dates_pml
 pml_stats=cellStats(sat_pml,stat="mean")
 pml_stats_SD=cellStats(sat_pml,stat="sd")
@@ -114,16 +110,12 @@ pml_df=b %>% mutate(sensor="Blended") #%>% left_join(a,.,by=c("full_TS"="date"))
 master=do.call("rbind",list(m_df,v_df,pml_df))
 master$sensor=as.factor(master$sensor)
 
-# ggplot(master,aes(x=date,y=chla))+geom_line(aes(group=interaction(sensor,year),color=sensor))+geom_point(aes(color=sensor))+
-#   scale_x_date(date_breaks="year",date_labels = "%Y",date_minor_breaks = "months",limits = as.Date(c('2015-08-01','2019-01-01')))+
-#   scale_color_manual("Sensor",values=c("Blended"="darkgoldenrod","MODIS"="coral1","VIIRS"="gray"))
-
 lineplot=ggplot(master,aes(x=date,y=chla))+geom_line(aes(group=sensor,color=sensor),size=.3)+geom_point(aes(color=sensor),size=.4)+
   geom_ribbon(aes(x=date,ymin=lower, ymax=upper,fill=sensor),alpha=0.3)+
   scale_x_date(date_breaks="month",date_labels = "%b",date_minor_breaks = "months")+
   scale_color_manual("Sensor",values=c("Blended"="cadetblue3","MODIS"="coral1","VIIRS"="gray"))+
   scale_fill_manual("",values=c("Blended"="cadetblue3","MODIS"="coral1","VIIRS"="gray"),guide=F)+
-  facet_wrap(~year, scales="free_x", nrow=1)+labs(x="Date")+labs(y="Chlorophyla (mg^-3)")+theme(legend.position=c(.1,.35),legend.justification = c(.9,.9))+
+  facet_wrap(~year, scales="free_x", nrow=1)+labs(x="Date")+labs(y="Leatherback habitat suitability")+theme(legend.position=c(.1,1),legend.justification = c(.9,.9))+
   theme(axis.text = element_text(size=6),axis.title = element_text(size=6),legend.text=element_text(size=6),legend.title = element_text(size=6),strip.text.x = element_text(size = 6), strip.background = element_blank())+
   theme(legend.key.size = unit(.5,'lines'))
 
@@ -131,7 +123,7 @@ lineplot=ggplot(master,aes(x=date,y=chla))+geom_line(aes(group=sensor,color=sens
 lineplot
 
 outputDir="/Users/heatherwelch/Dropbox/JPSS/plots/"
-datatype="chlaRibbon"
+datatype="lbstaRibbon"
 
 png(paste(outputDir,datatype,"_line.png",sep=''),width=18,height=6,units='cm',res=400)
 par(ps=10)
@@ -142,14 +134,14 @@ dev.off()
 
 
 #2.temporal average ####
-modis=list.files(modisDir,full.names = T,recursive = T,pattern = ".grd") %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea)) %>% calc(.,mean,na.rm=T)
-viirs=list.files(viirsDir,full.names = T,recursive = T,pattern = ".grd") %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea)) %>% calc(.,mean,na.rm=T)
-blend=list.files(pmlEsaDir,full.names = T,recursive = T,pattern = ".grd") %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea)) %>% calc(.,mean,na.rm=T)
+modis=list.files(modisDir,full.names = T,recursive = T,pattern = "mean.grd") %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea)) %>% calc(.,mean,na.rm=T)
+viirs=list.files(viirsDir,full.names = T,recursive = T,pattern = "mean.grd") %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea)) %>% calc(.,mean,na.rm=T)
+blend=list.files(pmlEsaDir,full.names = T,recursive = T,pattern = "mean.grd") %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea)) %>% calc(.,mean,na.rm=T)
 
 master=stack(modis,viirs,blend)
 names(master)=c("modis","viirs","blend")
 outputDir="/Users/heatherwelch/Dropbox/JPSS/plots/"#;dir.create(outputDir)
-datatype="chla"
+datatype="lbst"
 PlotPNGs<-function(stack,datatype,outputDir){
   
   H=maxValue(stack) %>% max()
@@ -164,26 +156,31 @@ PlotPNGs<-function(stack,datatype,outputDir){
   png(paste(outputDir,datatype,".png",sep=''),width=18,height=6,units='cm',res=400)
   par(mar=c(3,3,.5,.5),las=1,font=2)
   par(mfrow=c(1,3))
+  par(oma=c(0,0,0,1))
   
   if(datatype=="chla") {
     col=ChlorCols(255)
   }
   
+  if(datatype=="lbst") {
+    col=SpCols(255)
+  }
+  
   image.plot(stack[[1]],col=col,xlim=c(-130,-115),ylim=c(30,47),zlim=zlimits)
   maps::map('worldHires',add=TRUE,col=grey(0.7),fill=TRUE)
-  contour(stack[[1]], add=TRUE, col="black",levels=c(-2,-1,0))
+  contour(stack[[1]], add=TRUE, col="black",levels=c(.2,.4))
   text(-122,45,"MODIS",adj=c(0,0),cex=1.5)
   
   image.plot(stack[[2]],col=col,xlim=c(-130,-115),ylim=c(30,47),zlim=zlimits)
   maps::map('worldHires',add=TRUE,col=grey(0.7),fill=TRUE)
-  contour(stack[[2]], add=TRUE, col="black",levels=c(-2,-1,0))
+  contour(stack[[2]], add=TRUE, col="black",levels=c(.2,.4))
   text(-122,45,"VIIRS",adj=c(0,0),cex=1.5)
   
   image.plot(stack[[3]],col=col,xlim=c(-130,-115),ylim=c(30,47),zlim=zlimits)
   maps::map('worldHires',add=TRUE,col=grey(0.7),fill=TRUE)
-  contour(stack[[3]], add=TRUE, col="black",levels=c(-2,-1,0))
+  contour(stack[[3]], add=TRUE, col="black",levels=c(.2,.4))
   text(-122,45,"Blended",adj=c(0,0),cex=1.5)
-
+  
   
   box()
   dev.off()
@@ -194,9 +191,9 @@ PlotPNGs(stack=master,datatype = datatype,outputDir = outputDir)
   
 
 #3. average difference between products ####
-modis=list.files(modisDir,full.names = T,recursive = T,pattern = ".grd") %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea)) %>% calc(.,mean,na.rm=T)
-viirs=list.files(viirsDir,full.names = T,recursive = T,pattern = ".grd") %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea)) %>% calc(.,mean,na.rm=T)
-blend=list.files(pmlEsaDir,full.names = T,recursive = T,pattern = ".grd") %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea)) %>% calc(.,mean,na.rm=T)
+modis=list.files(modisDir,full.names = T,recursive = T,pattern = "mean.grd") %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea)) %>% calc(.,mean,na.rm=T)
+viirs=list.files(viirsDir,full.names = T,recursive = T,pattern = "mean.grd") %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea)) %>% calc(.,mean,na.rm=T)
+blend=list.files(pmlEsaDir,full.names = T,recursive = T,pattern = "mean.grd") %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea)) %>% calc(.,mean,na.rm=T)
 
 m_v=modis-viirs
 m_v_A=cellStats(m_v,mean)
@@ -212,7 +209,7 @@ v_b_SD=cellStats(v_b,sd)
 
 master=stack(m_v,m_b,v_b)
 outputDir="/Users/heatherwelch/Dropbox/JPSS/plots/"#;dir.create(outputDir)
-datatype="chla"
+datatype="lbst"
 PlotPNGs_difference<-function(stack,datatype,outputDir){
   
 # DiffCols<-colorRampPalette(brewer.pal(11,'RdYlGn'))
@@ -223,12 +220,13 @@ col=colorRamps:::blue2red(255)
 H=maxValue(stack) %>% max()
 L=minValue(stack) %>% min()
 # zlimits=c(L,H)
-zlimits=c(-2,2)
+zlimits=c(-.1,.1)
 
 ####### produce png ####
 png(paste(outputDir,datatype,"_difference.png",sep=''),width=18,height=6,units='cm',res=400)
 par(mar=c(3,3,.5,.5),las=1,font=2)
 par(mfrow=c(1,3))
+par(oma=c(0,0,0,1))
 
 plusSD=rasterToPoints(stack[[1]],fun=function(x)x>cellStats(stack[[1]],mean)+cellStats(stack[[1]],sd))
 minusSD=rasterToPoints(stack[[1]],fun=function(x)x<cellStats(stack[[1]],mean)-cellStats(stack[[1]],sd))
@@ -264,7 +262,5 @@ box()
 dev.off()
 
 }
-
 PlotPNGs_difference(stack = master,datatype = datatype,outputDir = outputDir)
-
 
