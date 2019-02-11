@@ -155,6 +155,16 @@ data_product="viirs_8Day"
 datapath="/Users/heatherwelch/Dropbox/JPSS"
 lapply(dates,FUN=run_ecocast,data_product=data_product,datapath=datapath)
 
+#### pml 2015 - 2018; 8 day ####
+a<-seq(as.Date("2015-08-01"), as.Date("2016-01-01"), by = "day",format="%Y/%mm/%dd") %>% as.character()
+b<-seq(as.Date("2016-08-01"), as.Date("2017-01-01"), by = "day",format="%Y/%mm/%dd") %>% as.character()
+c<-seq(as.Date("2017-08-01"), as.Date("2018-01-01"), by = "day",format="%Y/%mm/%dd") %>% as.character()
+d<-seq(as.Date("2018-08-01"), as.Date("2019-01-01"), by = "day",format="%Y/%mm/%dd") %>% as.character()
+dates=list(a,b,c,d) %>% unlist()
+data_product="pmlEsa_8Day"
+datapath="/Users/heatherwelch/Dropbox/JPSS"
+lapply(dates,FUN=run_ecocast,data_product=data_product,datapath=datapath)
+
 # #### viirs 2015; 1 day ####
 # #dates2<-seq(as.Date("2015-08-01"), as.Date("2015-12-01"), by = "day",format="%Y/%mm/%dd") 
 # dates2<-seq(as.Date("2015-10-05"), as.Date("2015-12-01"), by = "day",format="%Y/%mm/%dd") ##missing 2015-10-04
