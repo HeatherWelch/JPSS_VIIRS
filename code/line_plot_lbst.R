@@ -18,8 +18,8 @@ colnames(a)="full_TS"
 a=a %>% mutate(full_TS=as.Date(full_TS))
 
 #1. time series of spatial average, just mean ####
-sat_m=list.files(modisDir,full.names = T,recursive = T,pattern = "mean.grd") %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea))
-dates_m=list.files(modisDir,full.names = T,recursive = T,pattern = "mean.grd") %>% gsub("/Users/heatherwelch/Dropbox/JPSS/modis_8Day/EcoCastRuns/lbst/predCIs/lbst_pa_","",.) %>% gsub("_mean.grd","",.)
+sat_m=list.files(modisDir,full.names = T,recursive = T,pattern = "mean.grd")%>% grep("2016-10-11",.,invert=T,value=T)%>% grep("2016-09-07",.,invert=T,value=T) %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea))
+dates_m=list.files(modisDir,full.names = T,recursive = T,pattern = "mean.grd")%>% grep("2016-10-11",.,invert=T,value=T)%>% grep("2016-09-07",.,invert=T,value=T) %>% gsub("/Users/heatherwelch/Dropbox/JPSS/modis_8Day/EcoCastRuns/lbst/predCIs/lbst_pa_","",.) %>% gsub("_mean.grd","",.)
 names(sat_m)=dates_m
 m_stats=cellStats(sat_m,stat="mean")
 b=m_stats %>% as.data.frame() %>% mutate(date=as.Date(dates_m)) 
@@ -27,8 +27,8 @@ colnames(b)=c("chla","date")
 b=b %>% mutate(year=as.factor(strtrim(as.character(date),4))) %>% filter(year!=2012&year!=2019)%>% mutate(month=as.factor(substr(as.character(date),6,7)))%>% filter(month!="01"&month!="07")
 m_df=b %>% mutate(sensor="MODIS") #%>% left_join(a,.,by=c("full_TS"="date"))
 
-sat_v=list.files(viirsDir,full.names = T,recursive = T,pattern = "mean.grd") %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea))
-dates_v=list.files(viirsDir,full.names = T,recursive = T,pattern = "mean.grd") %>% gsub("/Users/heatherwelch/Dropbox/JPSS/viirs_8Day/EcoCastRuns/lbst/predCIs/lbst_pa_","",.) %>% gsub("_mean.grd","",.)
+sat_v=list.files(viirsDir,full.names = T,recursive = T,pattern = "mean.grd")%>% grep("2016-09-07",.,invert=T,value=T) %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea))
+dates_v=list.files(viirsDir,full.names = T,recursive = T,pattern = "mean.grd")%>% grep("2016-09-07",.,invert=T,value=T) %>% gsub("/Users/heatherwelch/Dropbox/JPSS/viirs_8Day/EcoCastRuns/lbst/predCIs/lbst_pa_","",.) %>% gsub("_mean.grd","",.)
 names(sat_v)=dates_v
 v_stats=cellStats(sat_v,stat="mean")
 b=v_stats %>% as.data.frame() %>% mutate(date=as.Date(dates_v)) 
@@ -71,8 +71,8 @@ dev.off()
 
 
 #1. time series of spatial average,  mean +/- SD ####
-sat_m=list.files(modisDir,full.names = T,recursive = T,pattern = "mean.grd") %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea))
-dates_m=list.files(modisDir,full.names = T,recursive = T,pattern = "mean.grd") %>% gsub("/Users/heatherwelch/Dropbox/JPSS/modis_8Day/EcoCastRuns/lbst/predCIs/lbst_pa_","",.) %>% gsub("_mean.grd","",.)
+sat_m=list.files(modisDir,full.names = T,recursive = T,pattern = "mean.grd")%>% grep("2016-10-11",.,invert=T,value=T)%>% grep("2016-09-07",.,invert=T,value=T) %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea))
+dates_m=list.files(modisDir,full.names = T,recursive = T,pattern = "mean.grd")%>% grep("2016-10-11",.,invert=T,value=T)%>% grep("2016-09-07",.,invert=T,value=T) %>% gsub("/Users/heatherwelch/Dropbox/JPSS/modis_8Day/EcoCastRuns/lbst/predCIs/lbst_pa_","",.) %>% gsub("_mean.grd","",.)
 names(sat_m)=dates_m
 m_stats=cellStats(sat_m,stat="mean")
 m_stats_SD=cellStats(sat_m,stat="sd")
@@ -83,8 +83,8 @@ b$lower=b$chla-m_stats_SD
 b=b %>% mutate(year=as.factor(strtrim(as.character(date),4))) %>% filter(year!=2012&year!=2019)%>% mutate(month=as.factor(substr(as.character(date),6,7)))%>% filter(month!="01"&month!="07")
 m_df=b %>% mutate(sensor="MODIS") #%>% left_join(a,.,by=c("full_TS"="date"))
 
-sat_v=list.files(viirsDir,full.names = T,recursive = T,pattern = "mean.grd") %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea))
-dates_v=list.files(viirsDir,full.names = T,recursive = T,pattern = "mean.grd") %>% gsub("/Users/heatherwelch/Dropbox/JPSS/viirs_8Day/EcoCastRuns/lbst/predCIs/lbst_pa_","",.) %>% gsub("_mean.grd","",.)
+sat_v=list.files(viirsDir,full.names = T,recursive = T,pattern = "mean.grd")%>% grep("2016-09-07",.,invert=T,value=T) %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea))
+dates_v=list.files(viirsDir,full.names = T,recursive = T,pattern = "mean.grd")%>% grep("2016-09-07",.,invert=T,value=T) %>% gsub("/Users/heatherwelch/Dropbox/JPSS/viirs_8Day/EcoCastRuns/lbst/predCIs/lbst_pa_","",.) %>% gsub("_mean.grd","",.)
 names(sat_v)=dates_v
 v_stats=cellStats(sat_v,stat="mean")
 v_stats_SD=cellStats(sat_v,stat="sd")
@@ -134,8 +134,8 @@ dev.off()
 
 
 #2.temporal average ####
-modis=list.files(modisDir,full.names = T,recursive = T,pattern = "mean.grd") %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea)) %>% calc(.,mean,na.rm=T)
-viirs=list.files(viirsDir,full.names = T,recursive = T,pattern = "mean.grd") %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea)) %>% calc(.,mean,na.rm=T)
+modis=list.files(modisDir,full.names = T,recursive = T,pattern = "mean.grd")%>% grep("2016-10-11",.,invert=T,value=T)%>% grep("2016-09-07",.,invert=T,value=T) %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea)) %>% calc(.,mean,na.rm=T)
+viirs=list.files(viirsDir,full.names = T,recursive = T,pattern = "mean.grd") %>% grep("2016-09-07",.,invert=T,value=T)%>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea)) %>% calc(.,mean,na.rm=T)
 blend=list.files(pmlEsaDir,full.names = T,recursive = T,pattern = "mean.grd") %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea)) %>% calc(.,mean,na.rm=T)
 
 master=stack(modis,viirs,blend)
@@ -191,8 +191,8 @@ PlotPNGs(stack=master,datatype = datatype,outputDir = outputDir)
   
 
 #3. average difference between products ####
-modis=list.files(modisDir,full.names = T,recursive = T,pattern = "mean.grd") %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea)) %>% calc(.,mean,na.rm=T)
-viirs=list.files(viirsDir,full.names = T,recursive = T,pattern = "mean.grd") %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea)) %>% calc(.,mean,na.rm=T)
+modis=list.files(modisDir,full.names = T,recursive = T,pattern = "mean.grd")%>% grep("2016-10-11",.,invert=T,value=T)%>% grep("2016-09-07",.,invert=T,value=T) %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea)) %>% calc(.,mean,na.rm=T)
+viirs=list.files(viirsDir,full.names = T,recursive = T,pattern = "mean.grd")%>% grep("2016-09-07",.,invert=T,value=T) %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea)) %>% calc(.,mean,na.rm=T)
 blend=list.files(pmlEsaDir,full.names = T,recursive = T,pattern = "mean.grd") %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea)) %>% calc(.,mean,na.rm=T)
 
 m_v=modis-viirs
