@@ -3,35 +3,76 @@
 modisDir="/Users/heatherwelch/Dropbox/JPSS/modis_8Day/Satellite"
 viirsDir="/Users/heatherwelch/Dropbox/JPSS/viirs_8Day/Satellite"
 pmlEsaDir="/Users/heatherwelch/Dropbox/JPSS/pmlEsa_8Day/Satellite"
-#modisCompDir="/Users/heatherwelch/Dropbox/JPSS/modis_8DayBin"#;dir.create(modisCompDir)
 modisCompDir="/Users/heatherwelch/Dropbox/JPSS/modis_8DayBin/Satellite"#;dir.create(modisCompDir)
+viirsCompDir="/Users/heatherwelch/Dropbox/JPSS/viirs_8DayBin/Satellite"#;dir.create(viirsCompDir)
 
-dates=list.files(pmlEsaDir)
+modisDirEco="/Users/heatherwelch/Dropbox/JPSS/modis_8Day/EcoCastRuns/output/mean"
+viirsDirEco="/Users/heatherwelch/Dropbox/JPSS/viirs_8Day/EcoCastRuns/output/mean"
+modisCompDirEco="/Users/heatherwelch/Dropbox/JPSS/modis_8DayBin/EcoCastRuns/output/mean"#;dir.create(modisCompDir)
+viirsCompDirEco="/Users/heatherwelch/Dropbox/JPSS/viirs_8DayBin/EcoCastRuns/output/mean"#;dir.create(viirsCompDir)
 
-eight_day=function(get_date){
-  get_date=as.Date(get_date)
+modisDirLBST="/Users/heatherwelch/Dropbox/JPSS/modis_8Day/EcoCastRuns/lbst/predCIs"
+viirsDirLBST="/Users/heatherwelch/Dropbox/JPSS/viirs_8Day/EcoCastRuns/lbst/predCIs"
+modisCompDirLBST="/Users/heatherwelch/Dropbox/JPSS/modis_8DayBin/EcoCastRuns/lbst/predCIs"#;dir.create(modisCompDir)
+viirsCompDirLBST="/Users/heatherwelch/Dropbox/JPSS/viirs_8DayBin/EcoCastRuns/lbst/predCIs"#;dir.create(viirsCompDir)
+
+path = "/Volumes/EcoCast_SeaGate/ERD_DOM/EcoCast_CodeArchive"
+staticdir=paste0(path,"/static_variables/")
+studyarea=readOGR(dsn=staticdir,layer="sa_square_coast3")
+
+dates=list.files(pmlEsaDir) %>% grep("-07-",.,invert=T,value=T)
+
+
+eight_day=function(datess,outdir,satDir){
+  get_date=as.Date(datess)
+  print(get_date)
   SEQNCE=unlist(list(as.character(get_date-1),as.character(get_date-2),as.character(get_date-3),as.character(get_date-4),as.character(get_date),as.character(get_date+1),as.character(get_date+2),as.character(get_date+3)))
-  
-}
-
-
-
-
-
-### F. Checks for the most recent layer for a given variable within a three-day window and returns the full path ####
-move_file=function(final_name){
-  if(file.exists(paste(envdir,most_recent,"/",final_name,".grd",sep=""))==TRUE){ # if url isn't successfully found, start checking for older layers, but check mtime of layer to make sure it's within 3 days window
-    print(paste(final_name," doesn't exist for ",get_date,", using most recent file instead (",most_recent,").",sep=""))
-    file_path=paste(envdir,most_recent,"/",final_name,".grd",sep="")
-  }else if (file.exists(paste(envdir,as.Date(most_recent)-1,"/",final_name,".grd",sep=""))==TRUE){
-    print(paste(final_name," doesn't exist for ",get_date,", using most recent file instead (",as.Date(most_recent)-1,").",sep=""))
-    file_path=paste(envdir,as.Date(most_recent)-1,"/",final_name,".grd",sep="")
-  }else if (file.exists(paste(envdir,as.Date(most_recent)-2,"/",final_name,".grd",sep=""))==TRUE){
-    print(paste(final_name," doesn't exist for ",get_date,", using most recent file instead (",as.Date(most_recent)-2,").",sep=""))
-    file_path=paste(envdir,as.Date(most_recent)-2,"/",final_name,".grd",sep="")
-  }else{
-    print(paste(final_name," not available within the past three days, EcoCast run for ",get_date," will not include ",final_name,sep=""))
-    file_path=NULL
+  stackk=lapply(SEQNCE,function(x)paste0(satDir,"/",x)) %>% unlist() %>% lapply(.,function(x)list.files(x,recursive=T,pattern=".grd",full.names=T)) %>% unlist() 
+  if(length(stackk)!=0 &length(stackk)!=1){
+    stackk=stackk %>% stack()%>%mask(.,studyarea) %>% crop(.,extent(studyarea)) %>% calc(.,mean,na.rm=T)
+    name=paste0(outdir,"/",get_date)
+    if(!file.exists(name)){dir.create(name)}
+    chla_name=paste0(name,"/l.blendChl.grd")
+    if(!file.exists(chla_name)){writeRaster(stackk,chla_name)}
   }
-  return(file_path)
 }
+
+ lapply(dates,FUN = eight_day,outdir=modisCompDir,satDir=modisDir)
+ lapply(dates,FUN = eight_day,outdir=viirsCompDir,satDir=viirsDir)
+
+ 
+ eight_day_ecocast=function(datess,outdir,satDir){
+   get_date=as.Date(datess)
+   print(get_date)
+   SEQNCE=unlist(list(as.character(get_date-1),as.character(get_date-2),as.character(get_date-3),as.character(get_date-4),as.character(get_date),as.character(get_date+1),as.character(get_date+2),as.character(get_date+3)))
+   stackk <- unique (grep(paste(SEQNCE,collapse="|"), 
+                          list.files(satDir,pattern = "_mean.grd",full.names = T), value=TRUE))
+   if(length(stackk)!=0 &length(stackk)!=1){
+     stackk=stackk %>% stack()%>%mask(.,studyarea) %>% crop(.,extent(studyarea)) %>% calc(.,mean,na.rm=T)
+     name=paste0(outdir,"/EcoCast_-0.1_-0.1_-0.05_-0.9_0.9_",get_date,"_mean.grd")
+     if(!file.exists(name)){writeRaster(stackk,name)}
+   }
+ }
+ 
+ 
+ lapply(dates,FUN = eight_day_ecocast,outdir=modisCompDirEco,satDir=modisDirEco)
+ lapply(dates,FUN = eight_day_ecocast,outdir=viirsCompDirEco,satDir=viirsDirEco)
+
+
+ eight_day_lbst=function(datess,outdir,satDir){
+   get_date=as.Date(datess)
+   print(get_date)
+   SEQNCE=unlist(list(as.character(get_date-1),as.character(get_date-2),as.character(get_date-3),as.character(get_date-4),as.character(get_date),as.character(get_date+1),as.character(get_date+2),as.character(get_date+3)))
+   stackk <- unique (grep(paste(SEQNCE,collapse="|"), 
+                          list.files(satDir,pattern = "_mean.grd",full.names = T), value=TRUE))
+   if(length(stackk)!=0 &length(stackk)!=1){
+     stackk=stackk %>% stack()%>%mask(.,studyarea) %>% crop(.,extent(studyarea)) %>% calc(.,mean,na.rm=T)
+     name=paste0(outdir,"/lbst_pa_",get_date,"_mean.grd")
+     if(!file.exists(name)){writeRaster(stackk,name)}
+   }
+ }
+ 
+ 
+ lapply(dates,FUN = eight_day_lbst,outdir=modisCompDirLBST,satDir=modisDirLBST)
+ lapply(dates,FUN = eight_day_lbst,outdir=viirsCompDirLBST,satDir=viirsDirLBST)
+ 

@@ -312,3 +312,19 @@ lapply(dates,FUN=run_ecocast_noCHLA,data_product=data_product,datapath=datapath)
 # data_product="viirs_1Day"
 # datapath="/Users/heatherwelch/Dropbox/JPSS/"
 # lapply(dates2,FUN=run_ecocast,data_product=data_product)
+
+#### modis binned 2015 - 2018; ####
+a<-seq(as.Date("2015-08-01"), as.Date("2016-01-01"), by = "day",format="%Y/%mm/%dd") %>% as.character()
+b<-seq(as.Date("2016-08-01"), as.Date("2017-01-01"), by = "day",format="%Y/%mm/%dd") %>% as.character()
+c<-seq(as.Date("2017-08-01"), as.Date("2018-01-01"), by = "day",format="%Y/%mm/%dd") %>% as.character()
+d<-seq(as.Date("2018-08-01"), as.Date("2019-01-01"), by = "day",format="%Y/%mm/%dd") %>% as.character()
+dates=list(a,b,c,d) %>% unlist()
+data_product="modis_8DayBin"
+datapath="/Users/heatherwelch/Dropbox/JPSS"
+lapply(dates,FUN=run_ecocast_noCHLA,data_product=data_product,datapath=datapath)
+
+
+
+
+
+
