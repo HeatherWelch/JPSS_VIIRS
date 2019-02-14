@@ -8,13 +8,17 @@ viirsCompDir="/Users/heatherwelch/Dropbox/JPSS/viirs_8DayBin/Satellite"#;dir.cre
 
 modisDirEco="/Users/heatherwelch/Dropbox/JPSS/modis_8Day/EcoCastRuns/output/mean"
 viirsDirEco="/Users/heatherwelch/Dropbox/JPSS/viirs_8Day/EcoCastRuns/output/mean"
+nochlaDirEco="/Users/heatherwelch/Dropbox/JPSS/no_chla/EcoCastRuns/output/mean"
 modisCompDirEco="/Users/heatherwelch/Dropbox/JPSS/modis_8DayBin/EcoCastRuns/output/mean"#;dir.create(modisCompDir)
 viirsCompDirEco="/Users/heatherwelch/Dropbox/JPSS/viirs_8DayBin/EcoCastRuns/output/mean"#;dir.create(viirsCompDir)
+nochlaCompDirEco="/Users/heatherwelch/Dropbox/JPSS/no_chlaBin/EcoCastRuns/output/mean"
 
 modisDirLBST="/Users/heatherwelch/Dropbox/JPSS/modis_8Day/EcoCastRuns/lbst/predCIs"
 viirsDirLBST="/Users/heatherwelch/Dropbox/JPSS/viirs_8Day/EcoCastRuns/lbst/predCIs"
+nochlaDirLBST="/Users/heatherwelch/Dropbox/JPSS/no_chla/EcoCastRuns/lbst/predCIs"
 modisCompDirLBST="/Users/heatherwelch/Dropbox/JPSS/modis_8DayBin/EcoCastRuns/lbst/predCIs"#;dir.create(modisCompDir)
 viirsCompDirLBST="/Users/heatherwelch/Dropbox/JPSS/viirs_8DayBin/EcoCastRuns/lbst/predCIs"#;dir.create(viirsCompDir)
+nochlCompDirLBST="/Users/heatherwelch/Dropbox/JPSS/no_chlaBin/EcoCastRuns/lbst/predCIs"#;dir.create(viirsCompDir)
 
 path = "/Volumes/EcoCast_SeaGate/ERD_DOM/EcoCast_CodeArchive"
 staticdir=paste0(path,"/static_variables/")
@@ -57,6 +61,7 @@ eight_day=function(datess,outdir,satDir){
  
  lapply(dates,FUN = eight_day_ecocast,outdir=modisCompDirEco,satDir=modisDirEco)
  lapply(dates,FUN = eight_day_ecocast,outdir=viirsCompDirEco,satDir=viirsDirEco)
+ lapply(dates,FUN = eight_day_ecocast,outdir=nochlaCompDirEco,satDir=nochlaDirEco)
 
 
  eight_day_lbst=function(datess,outdir,satDir){
@@ -75,4 +80,4 @@ eight_day=function(datess,outdir,satDir){
  
  lapply(dates,FUN = eight_day_lbst,outdir=modisCompDirLBST,satDir=modisDirLBST)
  lapply(dates,FUN = eight_day_lbst,outdir=viirsCompDirLBST,satDir=viirsDirLBST)
- 
+ lapply(dates,FUN = eight_day_lbst,outdir=nochlCompDirLBST,satDir=nochlaDirLBST)

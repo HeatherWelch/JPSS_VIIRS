@@ -146,6 +146,7 @@ for(get_date in SEQNCE){
   
   ############ 3. Variable 1,2, &3: NRT MSLA SSH and U&V (now all hosted within one netcdf)
   if(("sla.grd" %in% FileList_missing)==TRUE){
+    if(as.Date(get_date)>as.Date("2017-01-01")){
     print("Downloading and preparing NRT MSLA SSH")
     print("Downloading and preparing NRT MSLA u&v")
     date=paste("l4_",gsub("-","",get_date),sep="") # get date in correct format for ftp search
@@ -153,6 +154,16 @@ for(get_date in SEQNCE){
     userpwd <- "hwelch:HeatherCMEMS2016"
     name="MSLA_all"
     acquire_cmems_aviso(url=url,date=date,userpwd=userpwd,name=name)
+    }
+    if(as.Date(get_date)<as.Date("2017-01-01")){
+      print("Downloading and preparing NRT MSLA SSH")
+      print("Downloading and preparing NRT MSLA u&v")
+      date=paste("l4_",gsub("-","",get_date),sep="") # get date in correct format for ftp search
+      url <- paste0("ftp://my.cmems-du.eu/Core/SEALEVEL_GLO_PHY_L4_REP_OBSERVATIONS_008_047//dataset-duacs-rep-global-merged-allsat-phy-l4","/",year,"/")
+      userpwd <- "hwelch:HeatherCMEMS2016"
+      name="MSLA_all"
+      acquire_cmems_aviso(url=url,date=date,userpwd=userpwd,name=name)
+    }
     ## process any new files
     if(file.exists(paste(tmpdir,"/MSLA_all.nc",sep="")) & !file.exists(paste0(finaldir,"/sla.grd"))){
       print(paste("Preparing MSLAh: standardizing extent and placing file in ",finaldir,sep=""))
