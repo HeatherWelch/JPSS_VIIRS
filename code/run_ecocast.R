@@ -294,7 +294,7 @@ lapply(dates,FUN=run_ecocast,data_product=data_product,datapath=datapath)
 
 
 
-#### no chla 2015 - 2018; ####
+#### no chla 2015 - 2018; (running w new sla) ####
 a<-seq(as.Date("2015-08-01"), as.Date("2016-01-01"), by = "day",format="%Y/%mm/%dd") %>% as.character()
 b<-seq(as.Date("2016-08-01"), as.Date("2017-01-01"), by = "day",format="%Y/%mm/%dd") %>% as.character()
 c<-seq(as.Date("2017-08-01"), as.Date("2018-01-01"), by = "day",format="%Y/%mm/%dd") %>% as.character()
