@@ -1,10 +1,10 @@
 #### histograms, standardized value
 
 ### chla
-modisDir="/Users/heatherwelch/Dropbox/JPSS/modis_8Day/Satellite"
-viirsDir="/Users/heatherwelch/Dropbox/JPSS/viirs_8Day/Satellite"
-dates_m=list.files(modisDir,full.names = T,recursive = T,pattern = ".grd")%>% grep("2016-10-11",.,invert=T,value=T) %>% gsub("/Users/heatherwelch/Dropbox/JPSS/modis_8Day/Satellite/","",.) %>% gsub("/l.blendChl.grd","",.)
-dates_v=list.files(viirsDir,full.names = T,recursive = T,pattern = ".grd")%>% grep("2016-09-07",.,invert=T,value=T) %>% gsub("/Users/heatherwelch/Dropbox/JPSS/viirs_8Day/Satellite/","",.) %>% gsub("/l.blendChl.grd","",.)
+modisDir="/Users/heatherwelch/Dropbox/JPSS/modis_8Day/Satellite_mask"
+viirsDir="/Users/heatherwelch/Dropbox/JPSS/viirs_8Day/Satellite_mask"
+dates_m=list.files(modisDir,full.names = T,recursive = T,pattern = ".grd")%>% grep("2016-10-11",.,invert=T,value=T) %>% gsub("/Users/heatherwelch/Dropbox/JPSS/modis_8Day/Satellite_mask/","",.) %>% gsub("/l.blendChl.grd","",.)
+dates_v=list.files(viirsDir,full.names = T,recursive = T,pattern = ".grd")%>% grep("2016-09-07",.,invert=T,value=T) %>% gsub("/Users/heatherwelch/Dropbox/JPSS/viirs_8Day/Satellite_mask/","",.) %>% gsub("/l.blendChl.grd","",.)
 to_match=intersect(dates_m,dates_v)
 
 modisC=list.files(modisDir,full.names = T,recursive = T,pattern = ".grd")%>% grep("2016-10-11",.,invert=T,value=T) 
@@ -23,7 +23,7 @@ bb=rbind(b,d) %>% mutate(value=scales::rescale(value,c(0,1)))
 mc=bb %>% group_by(sensor) %>% summarise(mean=mean(value)) %>% .[1,2] %>% as.numeric()
 vc=bb %>% group_by(sensor) %>% summarise(mean=mean(value)) %>% .[2,2] %>% as.numeric()
 
-a=ggplot(data=bb,aes(x=value,group=sensor))+geom_histogram(aes(y=..density..,color=sensor),fill=NA)+
+a=ggplot(data=bb,aes(x=value,group=sensor))+#geom_histogram(aes(y=..density..,color=sensor),fill=NA)+
   geom_density(aes(fill=sensor),alpha=.2) + geom_vline(aes(xintercept=mc), linetype="dashed", size=.7,color="darkgoldenrod")+ 
   geom_vline(aes(xintercept=vc), linetype="dashed", size=.7,color="cadetblue3")+
   scale_color_manual("Sensor",values=c("MODIS"="darkgoldenrod","VIIRS"="cadetblue3"))+scale_fill_manual("Sensor",values=c("MODIS"="darkgoldenrod","VIIRS"="cadetblue3"))
@@ -35,7 +35,7 @@ b=b+scale_y_continuous(expand = c(0,0))+scale_x_continuous(expand = c(0,0))
 b
 
 outputDir="/Users/heatherwelch/Dropbox/JPSS/plots_02.14.19/"#;dir.create(outputDir)
-datatype="chla"
+datatype="chla_mask"
 
 png(paste(outputDir,datatype,"_hist.png",sep=''),width=8,height=8,units='cm',res=400)
 par(ps=10)
@@ -46,10 +46,10 @@ dev.off()
 
 
 ### lbst
-modisDir="/Users/heatherwelch/Dropbox/JPSS/modis_8Day/EcoCastRuns/lbst/predCIs"
-viirsDir="/Users/heatherwelch/Dropbox/JPSS/viirs_8Day/EcoCastRuns/lbst/predCIs"
-dates_m=list.files(modisDir,full.names = T,recursive = T,pattern = "mean.grd")%>% grep("2016-10-11",.,invert=T,value=T) %>% gsub("/Users/heatherwelch/Dropbox/JPSS/modis_8Day/EcoCastRuns/lbst/predCIs/lbst_pa_","",.) %>% gsub("_mean.grd","",.)
-dates_v=list.files(viirsDir,full.names = T,recursive = T,pattern = "mean.grd")%>% grep("2016-09-07",.,invert=T,value=T) %>% gsub("/Users/heatherwelch/Dropbox/JPSS/viirs_8Day/EcoCastRuns/lbst/predCIs/lbst_pa_","",.) %>% gsub("_mean.grd","",.)
+modisDir="/Users/heatherwelch/Dropbox/JPSS/modis_8Day/EcoCastRuns/lbst/predCIs_mask"
+viirsDir="/Users/heatherwelch/Dropbox/JPSS/viirs_8Day/EcoCastRuns/lbst/predCIs_mask"
+dates_m=list.files(modisDir,full.names = T,recursive = T,pattern = "mean.grd")%>% grep("2016-10-11",.,invert=T,value=T) %>% gsub("/Users/heatherwelch/Dropbox/JPSS/modis_8Day/EcoCastRuns/lbst/predCIs_mask/lbst_pa_","",.) %>% gsub("_mean.grd","",.)
+dates_v=list.files(viirsDir,full.names = T,recursive = T,pattern = "mean.grd")%>% grep("2016-09-07",.,invert=T,value=T) %>% gsub("/Users/heatherwelch/Dropbox/JPSS/viirs_8Day/EcoCastRuns/lbst/predCIs_mask/lbst_pa_","",.) %>% gsub("_mean.grd","",.)
 to_match=intersect(dates_m,dates_v)
 
 modisL=list.files(modisDir,full.names = T,recursive = T,pattern = "mean.grd")%>% grep("2016-10-11",.,invert=T,value=T)%>% grep("2016-09-07",.,invert=T,value=T) 
@@ -81,7 +81,7 @@ b
 
 
 outputDir="/Users/heatherwelch/Dropbox/JPSS/plots_02.14.19/"#;dir.create(outputDir)
-datatype="lbst"
+datatype="lbst_mask"
 
 png(paste(outputDir,datatype,"_hist.png",sep=''),width=8,height=8,units='cm',res=400)
 par(ps=10)
@@ -92,10 +92,10 @@ dev.off()
 
 
 ### ecocast
-modisDir="/Users/heatherwelch/Dropbox/JPSS/modis_8Day/EcoCastRuns/output/mean"
-viirsDir="/Users/heatherwelch/Dropbox/JPSS/viirs_8Day/EcoCastRuns/output/mean"
-dates_m=list.files(modisDir,full.names = T,recursive = T,pattern = "mean.grd")%>% grep("2016-10-11",.,invert=T,value=T) %>% gsub("/Users/heatherwelch/Dropbox/JPSS/modis_8Day/EcoCastRuns/output/mean/EcoCast_-0.1_-0.1_-0.05_-0.9_0.9_","",.) %>% gsub("_mean.grd","",.)
-dates_v=list.files(viirsDir,full.names = T,recursive = T,pattern = "mean.grd")%>% grep("2016-09-07",.,invert=T,value=T) %>% gsub("/Users/heatherwelch/Dropbox/JPSS/viirs_8Day/EcoCastRuns/output/mean/EcoCast_-0.1_-0.1_-0.05_-0.9_0.9_","",.) %>% gsub("_mean.grd","",.)
+modisDir="/Users/heatherwelch/Dropbox/JPSS/modis_8Day/EcoCastRuns/output/mean_mask"
+viirsDir="/Users/heatherwelch/Dropbox/JPSS/viirs_8Day/EcoCastRuns/output/mean_mask"
+dates_m=list.files(modisDir,full.names = T,recursive = T,pattern = "mean.grd")%>% grep("2016-10-11",.,invert=T,value=T) %>% gsub("/Users/heatherwelch/Dropbox/JPSS/modis_8Day/EcoCastRuns/output/mean_mask/EcoCast_-0.1_-0.1_-0.05_-0.9_0.9_","",.) %>% gsub("_mean.grd","",.)
+dates_v=list.files(viirsDir,full.names = T,recursive = T,pattern = "mean.grd")%>% grep("2016-09-07",.,invert=T,value=T) %>% gsub("/Users/heatherwelch/Dropbox/JPSS/viirs_8Day/EcoCastRuns/output/mean_mask/EcoCast_-0.1_-0.1_-0.05_-0.9_0.9_","",.) %>% gsub("_mean.grd","",.)
 to_match=intersect(dates_m,dates_v)
 
 modisE=list.files(modisDir,full.names = T,recursive = T,pattern = "mean.grd")%>% grep("2016-10-11",.,invert=T,value=T)%>% grep("2016-09-07",.,invert=T,value=T) 
@@ -125,7 +125,7 @@ b=b+scale_y_continuous(expand = c(0,0))+scale_x_continuous(expand = c(0,0))
 b
 
 outputDir="/Users/heatherwelch/Dropbox/JPSS/plots_02.14.19/"
-datatype="ecocast"
+datatype="ecocast_mask"
 
 png(paste(outputDir,datatype,"_hist.png",sep=''),width=8,height=8,units='cm',res=400)
 par(ps=10)
@@ -143,7 +143,7 @@ df$VIIRS=c(vc,vl,ve)
 df$MODIS=c(mc,ml,me)
 df$difference=round((df$MODIS-df$VIIRS),3)
 
-write.csv(df,paste0(outputDir,"hist_difference.csv"))
+write.csv(df,paste0(outputDir,"hist_difference_mask.csv"))
 
 #####
 
