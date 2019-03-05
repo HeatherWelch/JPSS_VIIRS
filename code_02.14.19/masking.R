@@ -104,3 +104,77 @@ for(date in to_match_date){
   v_name=paste0(viirsDir_C,"/blshObs_pa_",date,"_mean.grd")
   if(!file.exists(v_name)){writeRaster(viirs_c,v_name)}
 }
+
+##### blshtrk #####
+modisDir="/Users/heatherwelch/Dropbox/JPSS/modis_8Day/EcoCastRuns/blshTr/predCIs"
+viirsDir="/Users/heatherwelch/Dropbox/JPSS/viirs_8Day/EcoCastRuns/blshTr/predCIs"
+modisDir_C="/Users/heatherwelch/Dropbox/JPSS/modis_8Day/EcoCastRuns/blshTr/predCIs_mask"#;dir.create(modisDir_C)
+viirsDir_C="/Users/heatherwelch/Dropbox/JPSS/viirs_8Day/EcoCastRuns/blshTr/predCIs_mask"#;dir.create(viirsDir_C)
+
+dates_m=list.files(modisDir,full.names = T,recursive = T,pattern = "mean.grd")%>% grep("2016-10-11",.,invert=T,value=T) %>% gsub("/Users/heatherwelch/Dropbox/JPSS/modis_8Day/EcoCastRuns/blshTr/predCIs/blshTr_pa_","",.) %>% gsub("_mean.grd","",.)
+dates_v=list.files(viirsDir,full.names = T,recursive = T,pattern = "mean.grd")%>% grep("2016-09-07",.,invert=T,value=T) %>% gsub("/Users/heatherwelch/Dropbox/JPSS/viirs_8Day/EcoCastRuns/blshTr/predCIs/blshTr_pa_","",.) %>% gsub("_mean.grd","",.)
+to_match_date=intersect(dates_m,dates_v)
+
+for(date in to_match_date){
+  print(date)
+  modis=paste0(modisDir,"/blshTr_pa_",date,"_mean.grd") %>% raster()%>%mask(.,studyarea) %>% crop(.,extent(studyarea))
+  viirs=paste0(viirsDir,"/blshTr_pa_",date,"_mean.grd") %>% raster()%>%mask(.,studyarea) %>% crop(.,extent(studyarea))
+  maskR=paste0("/Users/heatherwelch/Dropbox/JPSS/modis_8Day/Satellite_mask","/",date,"/l.blendChl.grd") %>% raster()
+  viirs_c=mask(viirs,maskR)
+  modis_c=mask(modis,maskR)
+  
+  m_name=paste0(modisDir_C,"/blshTr_pa_",date,"_mean.grd")
+  if(!file.exists(m_name)){writeRaster(modis_c,m_name)}
+  v_name=paste0(viirsDir_C,"/blshTr_pa_",date,"_mean.grd")
+  if(!file.exists(v_name)){writeRaster(viirs_c,v_name)}
+}
+
+##### casl #####
+modisDir="/Users/heatherwelch/Dropbox/JPSS/modis_8Day/EcoCastRuns/casl/predCIs"
+viirsDir="/Users/heatherwelch/Dropbox/JPSS/viirs_8Day/EcoCastRuns/casl/predCIs"
+modisDir_C="/Users/heatherwelch/Dropbox/JPSS/modis_8Day/EcoCastRuns/casl/predCIs_mask";dir.create(modisDir_C)
+viirsDir_C="/Users/heatherwelch/Dropbox/JPSS/viirs_8Day/EcoCastRuns/casl/predCIs_mask";dir.create(viirsDir_C)
+
+dates_m=list.files(modisDir,full.names = T,recursive = T,pattern = "mean.grd")%>% grep("2016-10-11",.,invert=T,value=T) %>% gsub("/Users/heatherwelch/Dropbox/JPSS/modis_8Day/EcoCastRuns/casl/predCIs/casl_pa_","",.) %>% gsub("_mean.grd","",.)
+dates_v=list.files(viirsDir,full.names = T,recursive = T,pattern = "mean.grd")%>% grep("2016-09-07",.,invert=T,value=T) %>% gsub("/Users/heatherwelch/Dropbox/JPSS/viirs_8Day/EcoCastRuns/casl/predCIs/casl_pa_","",.) %>% gsub("_mean.grd","",.)
+to_match_date=intersect(dates_m,dates_v)
+
+for(date in to_match_date){
+  print(date)
+  modis=paste0(modisDir,"/casl_pa_",date,"_mean.grd") %>% raster()%>%mask(.,studyarea) %>% crop(.,extent(studyarea))
+  viirs=paste0(viirsDir,"/casl_pa_",date,"_mean.grd") %>% raster()%>%mask(.,studyarea) %>% crop(.,extent(studyarea))
+  maskR=paste0("/Users/heatherwelch/Dropbox/JPSS/modis_8Day/Satellite_mask","/",date,"/l.blendChl.grd") %>% raster()
+  viirs_c=mask(viirs,maskR)
+  modis_c=mask(modis,maskR)
+  
+  m_name=paste0(modisDir_C,"/casl_pa_",date,"_mean.grd")
+  if(!file.exists(m_name)){writeRaster(modis_c,m_name)}
+  v_name=paste0(viirsDir_C,"/casl_pa_",date,"_mean.grd")
+  if(!file.exists(v_name)){writeRaster(viirs_c,v_name)}
+}
+
+##### swor #####
+modisDir="/Users/heatherwelch/Dropbox/JPSS/modis_8Day/EcoCastRuns/swor/predCIs"
+viirsDir="/Users/heatherwelch/Dropbox/JPSS/viirs_8Day/EcoCastRuns/swor/predCIs"
+modisDir_C="/Users/heatherwelch/Dropbox/JPSS/modis_8Day/EcoCastRuns/swor/predCIs_mask"#;dir.create(modisDir_C)
+viirsDir_C="/Users/heatherwelch/Dropbox/JPSS/viirs_8Day/EcoCastRuns/swor/predCIs_mask"#;dir.create(viirsDir_C)
+
+dates_m=list.files(modisDir,full.names = T,recursive = T,pattern = "mean.grd")%>% grep("2016-10-11",.,invert=T,value=T) %>% gsub("/Users/heatherwelch/Dropbox/JPSS/modis_8Day/EcoCastRuns/swor/predCIs/swor_pa_","",.) %>% gsub("_mean.grd","",.)
+dates_v=list.files(viirsDir,full.names = T,recursive = T,pattern = "mean.grd")%>% grep("2016-09-07",.,invert=T,value=T) %>% gsub("/Users/heatherwelch/Dropbox/JPSS/viirs_8Day/EcoCastRuns/swor/predCIs/swor_pa_","",.) %>% gsub("_mean.grd","",.)
+to_match_date=intersect(dates_m,dates_v)
+
+for(date in to_match_date){
+  print(date)
+  modis=paste0(modisDir,"/swor_pa_",date,"_mean.grd") %>% raster()%>%mask(.,studyarea) %>% crop(.,extent(studyarea))
+  viirs=paste0(viirsDir,"/swor_pa_",date,"_mean.grd") %>% raster()%>%mask(.,studyarea) %>% crop(.,extent(studyarea))
+  maskR=paste0("/Users/heatherwelch/Dropbox/JPSS/modis_8Day/Satellite_mask","/",date,"/l.blendChl.grd") %>% raster()
+  viirs_c=mask(viirs,maskR)
+  modis_c=mask(modis,maskR)
+  
+  m_name=paste0(modisDir_C,"/swor_pa_",date,"_mean.grd")
+  if(!file.exists(m_name)){writeRaster(modis_c,m_name)}
+  v_name=paste0(viirsDir_C,"/swor_pa_",date,"_mean.grd")
+  if(!file.exists(v_name)){writeRaster(viirs_c,v_name)}
+}
+
+

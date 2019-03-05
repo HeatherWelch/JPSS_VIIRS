@@ -1,6 +1,7 @@
 #### checking chl-a importance of species
+library(pdp)
 
-###lbst
+###variable influence ####  
 path = "/Volumes/EcoCast_SeaGate/ERD_DOM/EcoCast_CodeArchive"
 moddir<-paste(path,"/ModRepFiles/",sep="")
 lbst=paste0(moddir,"brt_lbst_CIs.rds") %>% read_rds()
@@ -24,7 +25,7 @@ for(i in 1:length(models)){
     b=mod[[ii]] %>% summary()
     b=b %>% mutate(species=names[i]) %>% mutate(mod_num=ii)
    #empty=list(empty,b) %>% unlist()
-    empty[[i*ii]]=b
+    empty[[(i*10)+ii]]=b 
   }
   
 }
@@ -51,4 +52,79 @@ par(ps=10)
 par(mar=c(4,4,1,1))
 par(cex=1)
 d
+dev.off()
+
+
+### partial plots ####
+path = "/Volumes/EcoCast_SeaGate/ERD_DOM/EcoCast_CodeArchive"
+moddir<-paste(path,"/ModRepFiles/",sep="")
+lbst=paste0(moddir,"brt_lbst_CIs.rds") %>% read_rds()
+blshT=paste0(moddir,"brt_blshTr_CIs.rds")%>% read_rds()
+blshO=paste0(moddir,"brt_blshObs_CIs.rds")%>% read_rds()
+casl=paste0(moddir,"brt_casl_CIs.rds")%>% read_rds()
+swor=paste0(moddir,"brt_swor_CIs.rds")%>% read_rds()
+
+b=plot.gbm(lbst[[4]],i.var = "logChl",return.grid = F)
+plot.gbm(lbst[[4]],i.var = c(4),lwd = 2, col = "blue", main = "")
+
+a=lbst[[4]]
+
+partial(lbst[[4]],pred.var="logChl",plot=T)
+
+models=list(lbst,blshT,blshO,casl,swor)
+names=c("lbst","blshT","blshO","casl","swor")
+
+empty=list()
+
+for(i in 1:length(models)){
+  print(i)
+  print(names[i])
+  mod=models[[i]]
+  for(ii in 1:10){
+    b=mod[[ii]] %>% summary()
+    if("l.blendChl" %in% b$var){
+      b=plot.gbm(mod[[ii]],i.var = "l.blendChl",return.grid = T)%>% mutate(species=names[i]) %>% mutate(mod_num=ii) %>% dplyr::rename(logChl=l.blendChl)
+    }
+    if("logChl" %in% b$var){
+      b=plot.gbm(mod[[ii]],i.var = "logChl",return.grid = T)%>% mutate(species=names[i]) %>% mutate(mod_num=ii)
+    }
+    empty[[(i*10)+ii]]=b
+    print((i*10)+ii)
+  }
+  
+}
+a=do.call("rbind",empty)
+b=a %>% mutate(id=rep(1:100,50)) %>% group_by(species,id) %>% summarise(meanx=mean(logChl))
+bb=a %>% mutate(id=rep(1:100,50)) %>% group_by(species,id) %>% summarise(meany=mean(y))
+bb$meanx=b$meanx
+
+
+c=ggplot()+geom_line(data=a,aes(x=logChl,y=y,group=mod_num))
+d=c+geom_line(data=bb,aes(x=meanx,y=meany),color="red")+facet_grid(~species,scales="free")
+d
+
+####
+
+c=a %>% mutate(id=rep(1:100,50)) %>% group_by(species,id) %>% summarise(minx=min(y))
+cc=a %>% mutate(id=rep(1:100,50)) %>% group_by(species,id) %>% summarise(maxy=max(y))
+cc$minx=c$minx
+cc$x=bb$meanx
+
+#d=a%>% mutate(id=rep(1:100,50)) %>% filter(species=="blshO") %>% filter(id==1)
+
+d=ggplot()+geom_line(data=bb,aes(x=meanx,y=meany),color="red")+facet_grid(~species,scales="free")
+e=d+geom_ribbon(data=cc,aes(x=x,ymin=minx,ymax=maxy),fill="grey",alpha=.5)+facet_grid(~species,scales="free")+
+  ylab("f(Chla)")+xlab("Chla")+
+  theme(axis.text = element_text(size=6),axis.title = element_text(size=6),legend.text=element_text(size=6),legend.title = element_text(size=6),strip.text.y = element_text(size = 6),strip.text.x = element_text(size = 6), strip.background = element_blank())+
+  theme(legend.key.size = unit(.5,'lines'))
+e
+
+outputDir="/Users/heatherwelch/Dropbox/JPSS/plots_02.14.19/"
+datatype="partial_plot"
+
+png(paste(outputDir,datatype,".png",sep=''),width=24,height=10,units='cm',res=400)
+par(ps=10)
+par(mar=c(4,4,1,1))
+par(cex=1)
+e
 dev.off()

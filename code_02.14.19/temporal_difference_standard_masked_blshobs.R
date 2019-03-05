@@ -24,7 +24,7 @@ x=x %>% mutate(date=as.Date(date))
 modisDir="/Users/heatherwelch/Dropbox/JPSS/modis_8Day/Satellite_mask"
 viirsDir="/Users/heatherwelch/Dropbox/JPSS/viirs_8Day/Satellite_mask"
 
-#1. time series of spatial average, just mean 
+#1. time series of spatial average, just mean ####
 sat_m=list.files(modisDir,full.names = T,recursive = T,pattern = ".grd") %>% grep("2016-10-11",.,invert=T,value=T)%>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea))
 dates_m=list.files(modisDir,full.names = T,recursive = T,pattern = ".grd")%>% grep("2016-10-11",.,invert=T,value=T) %>% gsub("/Users/heatherwelch/Dropbox/JPSS/modis_8Day/Satellite_mask/","",.) %>% gsub("/l.blendChl.grd","",.)
 names(sat_m)=dates_m
@@ -84,12 +84,44 @@ a=master %>% spread(sensor,chla) %>% mutate(MODIS_VIIRS=MODIS-VIIRS) %>% .[compl
 LBST=a %>% gather(sensor,chla,-c(date,year,month,MODIS,VIIRS)) 
 #LBST=left_join(x,LBST)
 
+#### blshobs ####
+
+modisDir="/Users/heatherwelch/Dropbox/JPSS/modis_8Day/EcoCastRuns/blshObs/predCIs_mask"
+viirsDir="/Users/heatherwelch/Dropbox/JPSS/viirs_8Day/EcoCastRuns/blshObs/predCIs_mask"
+noCHLADir="/Users/heatherwelch/Dropbox/JPSS/no_chla/EcoCastRuns/blshObs/predCIs_mask"
+
+#1. time series of spatial average, just mean ####
+sat_m=list.files(modisDir,full.names = T,recursive = T,pattern = "mean.grd") %>% grep("2016-10-11",.,invert=T,value=T)%>% grep("2016-09-07",.,invert=T,value=T) %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea))
+dates_m=list.files(modisDir,full.names = T,recursive = T,pattern = "mean.grd")%>% grep("2016-10-11",.,invert=T,value=T)%>% grep("2016-09-07",.,invert=T,value=T)  %>% gsub(modisDir,"",.) %>% gsub("_mean.grd","",.)%>% gsub("/blshObs_pa_","",.)
+names(sat_m)=dates_m
+m_stats=cellStats(sat_m,stat="mean")
+b=m_stats %>% as.data.frame() %>% mutate(date=as.Date(dates_m)) 
+colnames(b)=c("chla","date")
+b=b %>% mutate(year=as.factor(strtrim(as.character(date),4))) %>% filter(year!=2012&year!=2019)%>% mutate(month=as.factor(substr(as.character(date),6,7)))%>% filter(month!="01"&month!="07")
+m_df=b %>% mutate(sensor="MODIS") #%>% left_join(a,.,by=c("full_TS"="date"))
+
+sat_v=list.files(viirsDir,full.names = T,recursive = T,pattern = "mean.grd")%>% grep("2016-09-07",.,invert=T,value=T)  %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea))
+dates_v=list.files(viirsDir,full.names = T,recursive = T,pattern = "mean.grd")%>% grep("2016-09-07",.,invert=T,value=T)  %>% gsub(viirsDir,"",.) %>% gsub("_mean.grd","",.)%>% gsub("/blshObs_pa_","",.)
+names(sat_v)=dates_v
+v_stats=cellStats(sat_v,stat="mean")
+b=v_stats %>% as.data.frame() %>% mutate(date=as.Date(dates_v)) 
+colnames(b)=c("chla","date")
+b=b %>% mutate(year=as.factor(strtrim(as.character(date),4))) %>% filter(year!=2012&year!=2019)%>% mutate(month=as.factor(substr(as.character(date),6,7)))%>% filter(month!="01"&month!="07")
+v_df=b %>% mutate(sensor="VIIRS") #%>% left_join(a,.,by=c("full_TS"="date"))
+
+master=do.call("rbind",list(m_df,v_df)) %>% mutate(chla=scales::rescale(chla,to=c(0,1)))
+master$sensor=as.factor(master$sensor)
+
+### plot to show difference, i don't really like it so byeee
+a=master %>% spread(sensor,chla) %>% mutate(MODIS_VIIRS=MODIS-VIIRS) %>% .[complete.cases(.),]
+blshObs=a %>% gather(sensor,chla,-c(date,year,month,MODIS,VIIRS)) 
+
 
 #### ecocast ####
 modisDir="/Users/heatherwelch/Dropbox/JPSS/modis_8Day/EcoCastRuns/output/mean_mask"
 viirsDir="/Users/heatherwelch/Dropbox/JPSS/viirs_8Day/EcoCastRuns/output/mean_mask"
 
-#1. time series of spatial average, just mean 
+#1. time series of spatial average, just mean ####
 sat_m=list.files(modisDir,full.names = T,recursive = T,pattern = "mean.grd")%>% grep("2016-10-11",.,invert=T,value=T)%>% grep("2016-09-07",.,invert=T,value=T) %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea))
 dates_m=list.files(modisDir,full.names = T,recursive = T,pattern = "mean.grd")%>% grep("2016-10-11",.,invert=T,value=T)%>% grep("2016-09-07",.,invert=T,value=T) %>% gsub("/Users/heatherwelch/Dropbox/JPSS/modis_8Day/EcoCastRuns/output/mean_mask/EcoCast_-0.1_-0.1_-0.05_-0.9_0.9_","",.) %>% gsub("_mean.grd","",.)
 names(sat_m)=dates_m
@@ -120,8 +152,9 @@ ECOCAST=a %>% gather(sensor,chla,-c(date,year,month,MODIS,VIIRS))
 CHLA1=CHLA %>% rename(chla=MODIS_VIIRS) %>% mutate(sensor="MODIS_VIIRS") %>% mutate(product="Chl-a")
 LBST1=LBST %>%  mutate(product="Leatherback")
 ECOCAST1=ECOCAST %>% mutate(product="EcoCast")
+blshObs1=blshObs%>%  mutate(product="Blueshark-Observer")
 
-master=do.call("rbind",list(CHLA1,LBST1,ECOCAST1)) %>% mutate(sensor=as.factor(sensor)) #%>% .[complete.cases(.),]
+master=do.call("rbind",list(CHLA1,LBST1,ECOCAST1,blshObs1)) %>% mutate(sensor=as.factor(sensor)) #%>% .[complete.cases(.),]
 #master=left_join(x,master)
 #master$chla_standard=rescale(master$chla,to=c(-1,1))
 # a=master %>% filter(product=="Chl-a") #%>%
@@ -132,7 +165,7 @@ master=do.call("rbind",list(CHLA1,LBST1,ECOCAST1)) %>% mutate(sensor=as.factor(s
 
 lineplot=ggplot(master,aes(x=date))+geom_line(aes(y=chla,group=product,color=product),size=.3)+geom_point(aes(y=chla,group=product,color=product),size=.4)+
   scale_x_date(date_breaks="month",date_labels = "%b",date_minor_breaks = "months")+geom_hline(yintercept=0)+
-  scale_color_manual("Sensor",values=c("Leatherback"="darkgoldenrod","EcoCast"="coral1","Chl-a"="gray"))+
+  scale_color_manual("Sensor",values=c("Leatherback"="darkgoldenrod","EcoCast"="coral1","Chl-a"="gray","Blueshark-Observer"="cadetblue3"))+
   facet_grid(sensor~year, scales="free")+labs(x="Date")+labs(y="Chlorophyl difference ")+theme(legend.position=c(.4,.5),legend.justification = c(.9,.9))+
   theme(axis.text = element_text(size=6),axis.title = element_text(size=6),legend.text=element_text(size=6),legend.title = element_text(size=6),strip.text.y = element_text(size = 6),strip.text.x = element_text(size = 6), strip.background = element_blank())+
   theme(legend.key.size = unit(.5,'lines'))
@@ -140,7 +173,7 @@ lineplot=ggplot(master,aes(x=date))+geom_line(aes(y=chla,group=product,color=pro
 lineplot
 
 outputDir="/Users/heatherwelch/Dropbox/JPSS/plots_02.14.19/"
-datatype="standard_difference_mask"
+datatype="standard_difference_mask-blshObs"
 
 png(paste(outputDir,datatype,"_line.png",sep=''),width=18,height=10,units='cm',res=400)
 par(ps=10)
@@ -152,7 +185,7 @@ master$product=as.factor(master$product)
 
 histtt=ggplot(master,aes(x=chla,group=product))+geom_density(aes(fill=product),alpha=.2)+
   geom_vline(xintercept=0,linetype="dashed")+
-  scale_color_manual("Sensor",values=c("Leatherback"="darkgoldenrod","EcoCast"="coral1","Chl-a"="gray"))+
+  scale_color_manual("Sensor",values=c("Leatherback"="darkgoldenrod","EcoCast"="coral1","Chl-a"="gray","Blueshark-Observer"="cadetblue3"))+
   #facet_grid(sensor~year, scales="free")+labs(x="Date")+labs(y="Chlorophyl difference ")+theme(legend.position=c(.4,.5),legend.justification = c(.9,.9))+
   theme(axis.text = element_text(size=6),axis.title = element_text(size=6),legend.text=element_text(size=6),legend.title = element_text(size=6),strip.text.y = element_text(size = 6),strip.text.x = element_text(size = 6), strip.background = element_blank())+
   theme(legend.key.size = unit(.5,'lines'))
