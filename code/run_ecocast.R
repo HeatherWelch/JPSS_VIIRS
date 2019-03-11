@@ -1,9 +1,8 @@
 ### running ecocast on the downloaded data
 
-run_ecocast=function(data_product,date){
+run_ecocast=function(data_product,date,datapath){
 
 ## paths for JPSS ####
-datapath = "/Users/heatherwelch/Dropbox/JPSS"
 envdir2=paste(datapath,"/",data_product,"/Satellite/",sep="") 
 outdir=paste(datapath,"/",data_product,"/EcoCastRuns/",sep="") 
 if(!dir.exists(outdir)){dir.create(outdir)}
@@ -133,5 +132,15 @@ lapply(dates2,FUN=run_ecocast,data_product=data_product)
 dates1<-seq(as.Date("2012-08-01"), as.Date("2012-12-01"), by = "day",format="%Y/%mm/%dd")
 dates2<-seq(as.Date("2015-08-01"), as.Date("2015-12-01"), by = "day",format="%Y/%mm/%dd")
 data_product="modis_8Day"
-lapply(dates1,FUN=run_ecocast,data_product=data_product)
+datapath="/Users/EcoCast/Dropbox/JPSS/"
+lapply(dates1,FUN=run_ecocast,data_product=data_product,datapath=datapath)
+lapply(dates2,FUN=run_ecocast,data_product=data_product)
+
+#### viirs 2015; 1 day ####
+#dates2<-seq(as.Date("2015-08-01"), as.Date("2015-12-01"), by = "day",format="%Y/%mm/%dd") 
+dates2<-seq(as.Date("2015-10-05"), as.Date("2015-12-01"), by = "day",format="%Y/%mm/%dd") ##missing 2015-10-04
+dates2<-seq(as.Date("2015-10-22"), as.Date("2015-12-01"), by = "day",format="%Y/%mm/%dd") ##missing 2015-10-21
+dates2<-seq(as.Date("2015-11-16"), as.Date("2015-12-01"), by = "day",format="%Y/%mm/%dd") ##missing 2015-11-13, 11-14, 11-15
+data_product="viirs_1Day"
+datapath="/Users/heatherwelch/Dropbox/JPSS/"
 lapply(dates2,FUN=run_ecocast,data_product=data_product)

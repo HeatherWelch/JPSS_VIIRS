@@ -155,3 +155,97 @@ while (i < length(dates)){
 }
 
 ##
+#### viirs 2016; 8 day ####
+dates<-seq(as.Date("2016-08-01"), as.Date("2017-01-01"), by = "day",format="%Y/%mm/%dd")
+
+i<-1
+waitsecs<-2
+while (i < length(dates)){
+  startdate<-dates[i]
+  #enddate=dates[i+1]
+  print(startdate)
+  filenm<-paste(viirsDir,"/erdVHNchla8day_",startdate,".nc",sep="")
+  url<-paste("https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdVHNchla8day.nc?chla[(",startdate,"T12:00:00Z):1:(",startdate,"T12:00:00Z)][(0.0):1:(0.0)][(60):1:(10.0)][(-150):1:(-110.5)]",sep="")
+  print(startdate)
+  f = CFILE(filenm,mode="wb")
+  curlPerform(url=url,writedata=f@ref,noprogress=FALSE) 
+  close(f)
+  i<-i+1
+  if (is.na(file.info(filenm)$size)) {
+    i<-i-1
+    waitfor(waitsecs)
+    waitsecs<-waitsecs+2
+  }
+  else if (file.info(filenm)$size < 2000){
+    i<-i-1
+    waitfor(waitsecs)
+    waitsecs<-waitsecs+2
+  }
+  else waitsecs<-2
+  if (waitsecs > 90) waitsecs <- 30
+}
+
+##
+
+#### viirs 2017; 8 day ####
+dates<-seq(as.Date("2017-08-01"), as.Date("2018-01-01"), by = "day",format="%Y/%mm/%dd")
+
+i<-1
+waitsecs<-2
+while (i < length(dates)){
+  startdate<-dates[i]
+  #enddate=dates[i+1]
+  print(startdate)
+  filenm<-paste(viirsDir,"/erdVHNchla8day_",startdate,".nc",sep="")
+  url<-paste("https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdVHNchla8day.nc?chla[(",startdate,"T12:00:00Z):1:(",startdate,"T12:00:00Z)][(0.0):1:(0.0)][(60):1:(10.0)][(-150):1:(-110.5)]",sep="")
+  print(startdate)
+  f = CFILE(filenm,mode="wb")
+  curlPerform(url=url,writedata=f@ref,noprogress=FALSE) 
+  close(f)
+  i<-i+1
+  if (is.na(file.info(filenm)$size)) {
+    i<-i-1
+    waitfor(waitsecs)
+    waitsecs<-waitsecs+2
+  }
+  else if (file.info(filenm)$size < 2000){
+    i<-i-1
+    waitfor(waitsecs)
+    waitsecs<-waitsecs+2
+  }
+  else waitsecs<-2
+  if (waitsecs > 90) waitsecs <- 30
+}
+
+##
+#### viirs 2018; 8 day ####
+dates<-seq(as.Date("2018-08-01"), as.Date("2019-01-01"), by = "day",format="%Y/%mm/%dd")
+
+i<-1
+waitsecs<-2
+while (i < length(dates)){
+  startdate<-dates[i]
+  #enddate=dates[i+1]
+  print(startdate)
+  filenm<-paste(viirsDir,"/erdVHNchla8day_",startdate,".nc",sep="")
+  url<-paste("https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdVHNchla8day.nc?chla[(",startdate,"T12:00:00Z):1:(",startdate,"T12:00:00Z)][(0.0):1:(0.0)][(60):1:(10.0)][(-150):1:(-110.5)]",sep="")
+  print(startdate)
+  f = CFILE(filenm,mode="wb")
+  curlPerform(url=url,writedata=f@ref,noprogress=FALSE) 
+  close(f)
+  i<-i+1
+  if (is.na(file.info(filenm)$size)) {
+    i<-i-1
+    waitfor(waitsecs)
+    waitsecs<-waitsecs+2
+  }
+  else if (file.info(filenm)$size < 2000){
+    i<-i-1
+    waitfor(waitsecs)
+    waitsecs<-waitsecs+2
+  }
+  else waitsecs<-2
+  if (waitsecs > 90) waitsecs <- 30
+}
+
+##
