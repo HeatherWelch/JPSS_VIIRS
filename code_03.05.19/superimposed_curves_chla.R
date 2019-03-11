@@ -43,6 +43,21 @@ modis=as.data.frame(modis_2018_late) %>% mutate(sensor="MODIS")
 viirs=as.data.frame(viirs_2018_late) %>% mutate(sensor="VIIRS")
 fall_2017=rbind(modis,viirs)
 
+#### full timeseries ####
+modis=list.files(modisDir,full.names = T,recursive = T,pattern = ".grd")%>% grep("2016-10-11",.,invert=T,value=T)
+modis2=unique (grep(paste(to_match_date,collapse="|"),modis, value=TRUE))
+modis3=modis2%>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea)) 
+modis=raster::calc(modis3,mean,na.rm=T)
+
+viirs=list.files(viirsDir,full.names = T,recursive = T,pattern = ".grd")%>% grep("2016-10-11",.,invert=T,value=T)
+viirs=unique (grep(paste(to_match_date,collapse="|"),viirs, value=TRUE))
+viirs=viirs %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea)) %>% raster::calc(.,fun=mean,na.rm=T)
+
+modis=as.data.frame(modis) %>% mutate(sensor="MODIS")
+viirs=as.data.frame(viirs) %>% mutate(sensor="VIIRS")
+all_timeseries=rbind(modis,viirs)
+
+
 ### partial plots ####
 path = "/Volumes/EcoCast_SeaGate/ERD_DOM/EcoCast_CodeArchive"
 moddir<-paste(path,"/ModRepFiles/",sep="")
@@ -144,3 +159,31 @@ par(mar=c(4,4,1,1))
 par(cex=1)
 f
 dev.off()
+
+####lbst ####
+
+lbst=bb %>% filter(species=="lbst")
+lbst_ribbon=cc %>% filter(species=="lbst")
+curve=left_join(lbst,lbst_ribbon) %>% gather(thing,value,-c(species,id,x,meanx)) %>% mutate(value=scales::rescale(value,c(0,1))) %>% spread(thing,value)
+
+d=ggplot()+geom_density(data=all_timeseries,aes(x=layer,group=sensor,fill=sensor),alpha=.2)+xlim(-4,3)+
+  scale_fill_manual("Sensor",values=c("MODIS"="blue","VIIRS"="yellow"))
+e=d+geom_ribbon(data=curve,aes(x=x,ymin=minx,ymax=maxy),fill="darkgrey",alpha=.6)+
+  ylab("f(Chla)")+xlab("Chla")+
+  theme(axis.text = element_text(size=6),axis.title = element_text(size=6),legend.text=element_text(size=6),legend.title = element_text(size=6),strip.text.y = element_text(size = 6),strip.text.x = element_text(size = 6), strip.background = element_blank())+
+  theme(legend.key.size = unit(.5,'lines'))
+f=e+geom_line(data=curve,aes(x=meanx,y=meany),color="Red")
+f=f+geom_vline(xintercept=-2.5,linetype="dashed")+geom_vline(xintercept=-.8,linetype="dashed")
+f=f+ylab("Scaled Chl-a influence and density distribution")+xlab("Chla (mg/m3)")+theme(legend.position=c(.9,.2),legend.justification = c(.9,.9))+
+  geom_text(aes(x=-4,y=1),label="C",size=2.5)
+f
+
+outputDir="/Users/heatherwelch/Dropbox/JPSS/plots_03.05.19/"
+datatype="all_time_series_curve"
+png(paste(outputDir,datatype,"_hist.png",sep=''),width=18,height=12,units='cm',res=400)
+par(ps=10)
+par(mar=c(4,4,1,1))
+par(cex=1)
+f
+dev.off()
+

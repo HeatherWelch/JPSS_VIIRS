@@ -131,7 +131,7 @@ cc <- within(cc, species[species == 'lbst'] <- 'Leatherback')
 cc <- within(cc, species[species == 'swor'] <- 'Swordfish')
 
 d=ggplot()+geom_line(data=bb,aes(x=meanx,y=meany),color="red")+facet_grid(~species,scales="free")
-e=d+geom_ribbon(data=cc,aes(x=x,ymin=minx,ymax=maxy),fill="grey",alpha=.5)+facet_grid(~species,scales="free")+
+e=d+geom_ribbon(data=cc,aes(x=x,ymin=minx,ymax=maxy),fill="darkgrey",alpha=.6)+facet_grid(~species,scales="free")+
   ylab("Chl-a influence")+xlab("Chl-a (mg/m3)")+
   theme(axis.text = element_text(size=6),axis.title = element_text(size=6),legend.text=element_text(size=6),legend.title = element_text(size=6),strip.text.y = element_text(size = 6),strip.text.x = element_text(size = 6), strip.background = element_blank())+
   theme(legend.key.size = unit(.5,'lines'))
