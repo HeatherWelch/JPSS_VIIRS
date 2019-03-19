@@ -49,51 +49,47 @@ glo_avw=log(glo_avw+0.001)
 glo_gsm=log(glo_gsm+0.001)
 esa=log(esa+0.001)
 
-pal <- colorRampPalette(c("purple4","blue", "cyan", "yellow", "red"))
-ncolors <- 255
-breaks <- seq(-4,3,,ncolors+1)
+modis[modis>0]<-0
+viirs[viirs>0]<-0
+glo_avw[glo_avw>0]<-0
+glo_gsm[glo_gsm>0]<-0
+esa[esa>0]<-0
 
 outputDir="/Users/heatherwelch/Dropbox/JPSS/plots_03.05.19/"
-datatype="eastern_pacific_map_log_mask"
+plot_EP=function(raster,datatype,outputDir){
+  pal <- colorRampPalette(c("purple4","blue", "cyan", "yellow", "red"))
+  ncolors <- 255
+  breaks <- seq(-3,0,,ncolors+1)
+  
+  png(paste(outputDir,datatype,"_eastern_pacific_masked.png",sep=''),width=18,height=12,units='cm',res=400)
+  par(mar=c(3,3,.5,.5),las=1,font=2)
+  par(mfrow=c(1,1))
+  par(oma=c(0,0,0,1))
+  
+  image.plot(raster, col=pal(ncolors), breaks=breaks, ylab="", xlab="", xlim=c(-150, -120),ylim=c(20, 50),legend.cex=.5)
+  maps::map('worldHires',add=TRUE,col="white",fill=TRUE)
+  contour(raster, add=TRUE, col="white",levels=c(-2,-2.5),labcex = 1,lwd=2)
+  text(-145,22,datatype,adj=c(0,0),cex=1.5,col="white")
+  
+  box()
+  dev.off()
+  
+}
 
-png(paste(outputDir,datatype,".png",sep=''),width=60,height=12,units='cm',res=400)
-par(mar=c(3,3,.5,.5),las=1,font=2)
-par(mfrow=c(1,5))
+plot_EP(raster=modis,datatype = "MODIS",outputDir = outputDir)
+plot_EP(raster=viirs,datatype = "VIIRS",outputDir = outputDir)
+plot_EP(raster=glo_avw,datatype = "GlobColour AVW",outputDir = outputDir)
+plot_EP(raster=glo_gsm,datatype = "GlobColour GSM",outputDir = outputDir)
+plot_EP(raster=esa,datatype = "OC-CCI",outputDir = outputDir)
 
-image.plot(modis, col=pal(ncolors), breaks=breaks, ylab="", xlab="", xlim=c(-150, -120),ylim=c(20, 50),legend.cex=.5)
-maps::map('worldHires',add=TRUE,col=grey(0.7),fill=TRUE)
-contour(modis, add=TRUE, col="white",levels=c(.1,.2),labcex = 1,lwd=2)
-text(-145,25,"MODIS",adj=c(0,0),cex=1.5,col="white")
 
-image.plot(viirs, col=pal(ncolors), breaks=breaks, ylab="", xlab="", xlim=c(-150, -120),ylim=c(20, 50),legend.cex=.5)
-maps::map('worldHires',add=TRUE,col=grey(0.7),fill=TRUE)
-contour(viirs, add=TRUE, col="white",levels=c(.1,.2),labcex = 1,lwd=2)
-text(-145,25,"VIIRS",adj=c(0,0),cex=1.5,col="white")
 
-image.plot(glo_avw, col=pal(ncolors), breaks=breaks, ylab="", xlab="", xlim=c(-150, -120),ylim=c(20, 50),legend.cex=.5)
-maps::map('worldHires',add=TRUE,col=grey(0.7),fill=TRUE)
-contour(glo_avw, add=TRUE, col="white",levels=c(.1,.2),labcex = 1,lwd=2)
-text(-145,25,"GlobColour AVW",adj=c(0,0),cex=1.5,col="white")
-
-image.plot(glo_gsm, col=pal(ncolors), breaks=breaks, ylab="", xlab="", xlim=c(-150, -120),ylim=c(20, 50),legend.cex=.5)
-maps::map('worldHires',add=TRUE,col=grey(0.7),fill=TRUE)
-contour(glo_gsm, add=TRUE, col="white",levels=c(.1,.2),labcex = 1,lwd=2)
-text(-145,25,"GlobColour GSM",adj=c(0,0),cex=1.5,col="white")
-
-image.plot(esa, col=pal(ncolors), breaks=breaks, ylab="", xlab="", xlim=c(-150, -120),ylim=c(20, 50),legend.cex=.5)
-maps::map('worldHires',add=TRUE,col=grey(0.7),fill=TRUE)
-contour(esa, add=TRUE, col="white",levels=c(.1,.2),labcex = 1,lwd=2)
-text(-145,25,"OC-CCI",adj=c(0,0),cex=1.5,col="white")
-
-box()
-dev.off()
-
-### plotting log####
-modis=raster("/Users/heatherwelch/Dropbox/JPSS/global/eastern_pacific_averages/modis.grd") 
-viirs=raster("/Users/heatherwelch/Dropbox/JPSS/global/eastern_pacific_averages/viirs.grd")
-glo_avw=raster("/Users/heatherwelch/Dropbox/JPSS/global/eastern_pacific_averages/glo_avw.grd")
-glo_gsm=raster("/Users/heatherwelch/Dropbox/JPSS/global/eastern_pacific_averages/glo_gsm.grd")
-esa=raster("/Users/heatherwelch/Dropbox/JPSS/global/eastern_pacific_averages/esa.grd")
+### plotting with standard deviations ####
+modis=raster("/Users/heatherwelch/Dropbox/JPSS/global/eastern_pacific_averages_mask/modis.grd") 
+viirs=raster("/Users/heatherwelch/Dropbox/JPSS/global/eastern_pacific_averages_mask/viirs.grd")
+glo_avw=raster("/Users/heatherwelch/Dropbox/JPSS/global/eastern_pacific_averages_mask/glo_avw.grd")
+glo_gsm=raster("/Users/heatherwelch/Dropbox/JPSS/global/eastern_pacific_averages_mask/glo_gsm.grd")
+esa=raster("/Users/heatherwelch/Dropbox/JPSS/global/eastern_pacific_averages_mask/esa.grd")
 
 modis=log(modis+0.001)
 viirs=log(viirs+0.001)
@@ -101,48 +97,46 @@ glo_avw=log(glo_avw+0.001)
 glo_gsm=log(glo_gsm+0.001)
 esa=log(esa+0.001)
 
-modis[modis>0]<-0
-viirs[viirs>0]<-0
-glo_avw[glo_avw>0]<-0
-glo_gsm[glo_gsm>0]<-0
-esa[esa>0]<-0
-
-pal <- colorRampPalette(c("purple4","blue", "cyan", "yellow", "red"))
-ncolors <- 255
-breaks <- seq(-3,0,,ncolors+1)
+master=stack(modis,viirs,glo_avw,glo_gsm,esa) %>% calc(.,fun=mean)
+writeRaster(master,"/Users/heatherwelch/Dropbox/JPSS/global/eastern_pacific_averages_mask/mean_all_products.grd")
+master_sd=stack(modis,viirs,glo_avw,glo_gsm,esa) %>% calc(.,fun=sd)
+writeRaster(master_sd,"/Users/heatherwelch/Dropbox/JPSS/global/eastern_pacific_averages_mask/sd_all_products.grd")
+plus=master+(master_sd*1.5)
+minus=master-(master_sd*1.5)
 
 outputDir="/Users/heatherwelch/Dropbox/JPSS/plots_03.05.19/"
-datatype="eastern_pacific_map_log"
+plot_EP_SD=function(raster,datatype,plus,minus,outputDir){
+  pal <- colorRampPalette(c("purple4","blue", "cyan", "yellow", "red"))
+  ncolors <- 255
+  breaks <- seq(-4,2,,ncolors+1)
+  
+  png(paste(outputDir,datatype,"_eastern_pacific_masked_SD.png",sep=''),width=18,height=12,units='cm',res=400)
+  par(mar=c(3,3,.5,.5),las=1,font=2)
+  par(mfrow=c(1,1))
+  par(oma=c(0,0,0,2))
+  
+  mplus=raster-plus
+  mplus[mplus<0]<-NA
+  mplus=rasterToPoints(mplus)
+  
+  mminus=raster-minus
+  mminus[mminus>0]<-NA
+  mminus=rasterToPoints(mminus)
+  
+  image.plot(raster, col=pal(ncolors), breaks=breaks, ylab="", xlab="", xlim=c(-150, -120),ylim=c(20, 50),legend.cex=.5)
+  maps::map('worldHires',add=TRUE,col="white",fill=TRUE)
+  text(-145,22,datatype,adj=c(0,0),cex=1.5,col="white")
+  points(mplus,cex=.02,pch = ".",col="grey")
+  points(mminus,cex=.02,pch = ".",col="black")
+  contour(raster, add=TRUE, col="white",levels=c(-2),labcex = 1,lwd=2)
+  
+  box()
+  dev.off()
+  
+}
 
-png(paste(outputDir,datatype,".png",sep=''),width=60,height=12,units='cm',res=400)
-par(mar=c(3,3,.5,.5),las=1,font=2)
-par(mfrow=c(1,5))
-par(oma=c(0,0,0,2))
-
-image.plot(modis, col=pal(ncolors), breaks=breaks, ylab="", xlab="", xlim=c(-150, -120),ylim=c(20, 50),legend.cex=.5)
-maps::map('worldHires',add=TRUE,col=grey(0.7),fill=TRUE)
-contour(modis, add=TRUE, col="white",levels=c(-2,-2.5),labcex = 1,lwd=2)
-text(-145,25,"MODIS",adj=c(0,0),cex=1.5,col="white")
-
-image.plot(viirs, col=pal(ncolors), breaks=breaks, ylab="", xlab="", xlim=c(-150, -120),ylim=c(20, 50),legend.cex=.5)
-maps::map('worldHires',add=TRUE,col=grey(0.7),fill=TRUE)
-contour(viirs, add=TRUE, col="white",levels=c(-2,-2.5),labcex = 1,lwd=2)
-text(-145,25,"VIIRS",adj=c(0,0),cex=1.5,col="white")
-
-image.plot(glo_avw, col=pal(ncolors), breaks=breaks, ylab="", xlab="", xlim=c(-150, -120),ylim=c(20, 50),legend.cex=.5)
-maps::map('worldHires',add=TRUE,col=grey(0.7),fill=TRUE)
-contour(glo_avw, add=TRUE, col="white",levels=c(-2,-2.5),labcex = 1,lwd=2)
-text(-145,25,"GlobColour AVW",adj=c(0,0),cex=1.5,col="white")
-
-image.plot(glo_gsm, col=pal(ncolors), breaks=breaks, ylab="", xlab="", xlim=c(-150, -120),ylim=c(20, 50),legend.cex=.5)
-maps::map('worldHires',add=TRUE,col=grey(0.7),fill=TRUE)
-contour(glo_gsm, add=TRUE, col="white",levels=c(-2,-2.5),labcex = 1,lwd=2)
-text(-145,25,"GlobColour GSM",adj=c(0,0),cex=1.5,col="white")
-
-image.plot(esa, col=pal(ncolors), breaks=breaks, ylab="", xlab="", xlim=c(-150, -120),ylim=c(20, 50),legend.cex=.5)
-maps::map('worldHires',add=TRUE,col=grey(0.7),fill=TRUE)
-contour(esa, add=TRUE, col="white",levels=c(-2,-2.5),labcex = 1,lwd=2)
-text(-145,25,"OC-CCI",adj=c(0,0),cex=1.5,col="white")
-
-box()
-dev.off()
+plot_EP_SD(raster=modis,datatype = "MODIS",outputDir = outputDir,plus=plus,minus=minus)
+plot_EP_SD(raster=viirs,datatype = "VIIRS",outputDir = outputDir,plus=plus,minus=minus)
+plot_EP_SD(raster=glo_avw,datatype = "GlobColour AVW",outputDir = outputDir,plus=plus,minus=minus)
+plot_EP_SD(raster=glo_gsm,datatype = "GlobColour GSM",outputDir = outputDir,plus=plus,minus=minus)
+plot_EP_SD(raster=esa,datatype = "OC-CCI",outputDir = outputDir,plus=plus,minus=minus)
