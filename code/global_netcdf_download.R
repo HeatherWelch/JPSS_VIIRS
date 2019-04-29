@@ -1,7 +1,7 @@
 #### downloading global MODIS and VIIRS for summary figure
 source("/Users/heatherwelch/Dropbox/JPSS/JPSS_VIIRS/code/load_functions.R")
 
-saveDir="/Users/heatherwelch/Dropbox/JPSS/global/raw_filezilla/"
+saveDir="/Users/EcoCast/Dropbox/JPSS/global_teamviewer/"
 
 waitfor <- function(x){
   p1 <- proc.time()
