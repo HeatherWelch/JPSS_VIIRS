@@ -12,6 +12,7 @@ library(shinydashboard)
 library(RColorBrewer)
 library(raster)
 library(tidyverse)
+library(rgdal)
 
 # modis=list.files("data/global_rasters_mask",pattern="erdMH1chlamday") %>% grep(".grd",.,value=T) 
 # occci=list.files("data/global_rasters_mask/",pattern="ESACCI-OC-L3S") %>% grep(".grd",.,value=T) 
@@ -46,6 +47,9 @@ ui <- dashboardPage(skin="green",
 
 server <- shinyServer(function(input, output) {
   
+  # options(rsconnect.max.bundle.size=5000000000) 
+  # options(rsconnect.http = "curl")
+  # 
   full_ext<-list()
   full_ext$lon<-(-119)
   full_ext$lat<-40.078259
