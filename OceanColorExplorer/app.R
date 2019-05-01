@@ -1,5 +1,14 @@
 ### app for chla
 
+#### code used to create smaller size rasters by reducing resolution and using GTiff
+# for(file in list.files(pattern=".grd")){
+#   print(file)
+#   a=raster(file)
+#   b=aggregate(a,fact=3)
+#   name=gsub(".grd","",file)
+#   writeRaster(b,paste0("/Users/heatherwelch/Dropbox/JPSS/JPSS_VIIRS/OceanColorExplorer/data/global_rasters_netcdf/",name),format="GTiff", options=c("COMPRESS=DEFLATE", "PREDICTOR=3", "ZLEVEL=6"),overwrite=T)
+# }
+
 ##### Defining global objects####
 # source functions
 library(shinyalert)
