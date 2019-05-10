@@ -1,12 +1,48 @@
-### master histograms - all products
-
+### summary table
 source("/Users/heatherwelch/Dropbox/JPSS/JPSS_VIIRS/code/load_functions.R")
 library(padr)
 library(zoo)
 library(scales)
 library(sdmvspecies)
 
-outputDir="/Users/heatherwelch/Dropbox/JPSS/plots_04.14.19/"
+### mean chla influence ----------------------------------------------------> ####
+path = "/Volumes/EcoCast_SeaGate/ERD_DOM/EcoCast_CodeArchive"
+moddir<-paste(path,"/ModRepFiles/",sep="")
+lbst=paste0(moddir,"brt_lbst_CIs.rds") %>% read_rds()
+blshT=paste0(moddir,"brt_blshTr_CIs.rds")%>% read_rds()
+blshO=paste0(moddir,"brt_blshObs_CIs.rds")%>% read_rds()
+casl=paste0(moddir,"brt_casl_CIs.rds")%>% read_rds()
+swor=paste0(moddir,"brt_swor_CIs.rds")%>% read_rds()
+
+#a=summary(casl[[3]])%>% mutate(species=names[i]) %>% mutate(mod_num=i)
+
+models=list(lbst,blshT,blshO,casl,swor)
+names=c("lbst","blshT","blshO","casl","swor")
+
+empty=list()
+
+for(i in 1:length(models)){
+  print(i)
+  print(names[i])
+  mod=models[[i]]
+  for(ii in 1:10){
+    b=mod[[ii]] %>% summary()
+    b=b %>% mutate(species=names[i]) %>% mutate(mod_num=ii)
+    #empty=list(empty,b) %>% unlist()
+    empty[[(i*10)+ii]]=b 
+  }
+  
+}
+a=do.call("rbind",empty)
+b=a %>% mutate(var=gsub("_mean","",var))%>% mutate(var=gsub("windy_new","ywind",var))%>% mutate(var=gsub("log_eke","l.eke",var))%>% mutate(var=gsub("analysed_","",var))%>% mutate(var=gsub("logChl","l.blendChl",var))
+as.factor(b$var) %>% unique()
+
+mean_influence=b %>% group_by(species,var) %>% summarise(mean=mean(rel.inf,na.rm=T)) %>% filter(var=="l.blendChl")
+
+### mean chla difference ----------------------------------------------------> ####
+path = "/Volumes/EcoCast_SeaGate/ERD_DOM/EcoCast_CodeArchive"
+staticdir=paste0(path,"/static_variables/")
+studyarea=readOGR(dsn=staticdir,layer="sa_square_coast3")
 
 path = "/Volumes/EcoCast_SeaGate/ERD_DOM/EcoCast_CodeArchive"
 staticdir=paste0(path,"/static_variables/")
@@ -23,6 +59,8 @@ dates_v=list.files(viirsDir,full.names = T,recursive = T,pattern = "mean.grd")%>
 to_match_date=intersect(dates_m,dates_v)
 to_match_date
 
+################### --------------------------------------------------------- > line plot
+
 #### lbst ####
 modisDir="/Users/heatherwelch/Dropbox/JPSS/modis_8Day/EcoCastRuns/lbst/predCIs_mask"
 viirsDir="/Users/heatherwelch/Dropbox/JPSS/viirs_8Day/EcoCastRuns/lbst/predCIs_mask"
@@ -32,6 +70,14 @@ modisE=unique (grep(paste(to_match_date,collapse="|"),modisE, value=TRUE)) %>% s
 
 viirsE=list.files(viirsDir,full.names = T,recursive = T,pattern = "mean.grd")%>% grep("2016-09-07",.,invert=T,value=T) 
 viirsE=unique (grep(paste(to_match_date,collapse="|"),viirsE, value=TRUE)) %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea))
+
+### p-values ###
+m_stats=modisE %>% as.data.frame() %>% gather(layer,chl)%>% mutate(sensor="MODIS")
+v_stats=viirsE %>% as.data.frame() %>% gather(layer,chl)%>% mutate(sensor="VIIRS")
+a=rbind(m_stats,v_stats) %>% mutate(sensor=as.factor(sensor)) %>% select(-layer) %>% .[complete.cases(.),]
+
+lbst_aov=aov(chl~sensor,data=a)
+###
 
 rescaledStack=fcnRescale(stack(modisE,viirsE))
 modisE=rescaledStack[[grep(".1$",names(rescaledStack))]]
@@ -56,6 +102,14 @@ modisE=unique (grep(paste(to_match_date,collapse="|"),modisE, value=TRUE)) %>% s
 viirsE=list.files(viirsDir,full.names = T,recursive = T,pattern = "mean.grd")%>% grep("2016-09-07",.,invert=T,value=T) 
 viirsE=unique (grep(paste(to_match_date,collapse="|"),viirsE, value=TRUE)) %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea))
 
+### p-values ###
+m_stats=modisE %>% as.data.frame() %>% gather(layer,chl)%>% mutate(sensor="MODIS")
+v_stats=viirsE %>% as.data.frame() %>% gather(layer,chl)%>% mutate(sensor="VIIRS")
+a=rbind(m_stats,v_stats) %>% mutate(sensor=as.factor(sensor)) %>% select(-layer) %>% .[complete.cases(.),]
+
+blshobs_aov=aov(chl~sensor,data=a)
+###
+
 rescaledStack=fcnRescale(stack(modisE,viirsE))
 modisE=rescaledStack[[grep(".1$",names(rescaledStack))]]
 viirsE=rescaledStack[[grep(".2$",names(rescaledStack))]]
@@ -77,6 +131,14 @@ modisE=unique (grep(paste(to_match_date,collapse="|"),modisE, value=TRUE)) %>% s
 
 viirsE=list.files(viirsDir,full.names = T,recursive = T,pattern = "mean.grd")%>% grep("2016-09-07",.,invert=T,value=T) 
 viirsE=unique (grep(paste(to_match_date,collapse="|"),viirsE, value=TRUE)) %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea))
+
+### p-values ###
+m_stats=modisE %>% as.data.frame() %>% gather(layer,chl)%>% mutate(sensor="MODIS")
+v_stats=viirsE %>% as.data.frame() %>% gather(layer,chl)%>% mutate(sensor="VIIRS")
+a=rbind(m_stats,v_stats) %>% mutate(sensor=as.factor(sensor)) %>% select(-layer) %>% .[complete.cases(.),]
+
+swor_aov=aov(chl~sensor,data=a)
+###
 
 rescaledStack=fcnRescale(stack(modisE,viirsE))
 modisE=rescaledStack[[grep(".1$",names(rescaledStack))]]
@@ -100,6 +162,14 @@ modisE=unique (grep(paste(to_match_date,collapse="|"),modisE, value=TRUE)) %>% s
 viirsE=list.files(viirsDir,full.names = T,recursive = T,pattern = "mean.grd")%>% grep("2016-09-07",.,invert=T,value=T) 
 viirsE=unique (grep(paste(to_match_date,collapse="|"),viirsE, value=TRUE)) %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea))
 
+### p-values ###
+m_stats=modisE %>% as.data.frame() %>% gather(layer,chl)%>% mutate(sensor="MODIS")
+v_stats=viirsE %>% as.data.frame() %>% gather(layer,chl)%>% mutate(sensor="VIIRS")
+a=rbind(m_stats,v_stats) %>% mutate(sensor=as.factor(sensor)) %>% select(-layer) %>% .[complete.cases(.),]
+
+casl_aov=aov(chl~sensor,data=a)
+###
+
 rescaledStack=fcnRescale(stack(modisE,viirsE))
 modisE=rescaledStack[[grep(".1$",names(rescaledStack))]]
 viirsE=rescaledStack[[grep(".2$",names(rescaledStack))]]
@@ -121,6 +191,14 @@ modisE=unique (grep(paste(to_match_date,collapse="|"),modisE, value=TRUE)) %>% s
 
 viirsE=list.files(viirsDir,full.names = T,recursive = T,pattern = "mean.grd")%>% grep("2016-09-07",.,invert=T,value=T) 
 viirsE=unique (grep(paste(to_match_date,collapse="|"),viirsE, value=TRUE)) %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea))
+
+### p-values ###
+m_stats=modisE %>% as.data.frame() %>% gather(layer,chl)%>% mutate(sensor="MODIS")
+v_stats=viirsE %>% as.data.frame() %>% gather(layer,chl)%>% mutate(sensor="VIIRS")
+a=rbind(m_stats,v_stats) %>% mutate(sensor=as.factor(sensor)) %>% select(-layer) %>% .[complete.cases(.),]
+
+blshtr_aov=aov(chl~sensor,data=a)
+###
 
 rescaledStack=fcnRescale(stack(modisE,viirsE))
 modisE=rescaledStack[[grep(".1$",names(rescaledStack))]]
@@ -146,6 +224,14 @@ modisE=unique (grep(paste(to_match_date,collapse="|"),modisE, value=TRUE)) %>% s
 viirsE=list.files(viirsDir,full.names = T,recursive = T,pattern = ".grd")%>% grep("2016-09-07",.,invert=T,value=T) 
 viirsE=unique (grep(paste(to_match_date,collapse="|"),viirsE, value=TRUE)) %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea))
 
+### p-values ###
+m_stats=modisE %>% as.data.frame() %>% gather(layer,chl)%>% mutate(sensor="MODIS")
+v_stats=viirsE %>% as.data.frame() %>% gather(layer,chl)%>% mutate(sensor="VIIRS")
+a=rbind(m_stats,v_stats) %>% mutate(sensor=as.factor(sensor)) %>% select(-layer) %>% .[complete.cases(.),]
+
+chla_aov=aov(chl~sensor,data=a)
+###
+
 rescaledStack=fcnRescale(stack(modisE,viirsE))
 modisE=rescaledStack[[grep(".1$",names(rescaledStack))]]
 viirsE=rescaledStack[[grep(".2$",names(rescaledStack))]]
@@ -168,6 +254,14 @@ modisE=unique (grep(paste(to_match_date,collapse="|"),modisE, value=TRUE)) %>% s
 viirsE=list.files(viirsDir,full.names = T,recursive = T,pattern = "mean.grd")%>% grep("2016-09-07",.,invert=T,value=T) 
 viirsE=unique (grep(paste(to_match_date,collapse="|"),viirsE, value=TRUE)) %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea))
 
+### p-values ###
+m_stats=modisE %>% as.data.frame() %>% gather(layer,chl)%>% mutate(sensor="MODIS")
+v_stats=viirsE %>% as.data.frame() %>% gather(layer,chl)%>% mutate(sensor="VIIRS")
+a=rbind(m_stats,v_stats) %>% mutate(sensor=as.factor(sensor)) %>% select(-layer) %>% .[complete.cases(.),]
+
+eco_aov=aov(chl~sensor,data=a)
+###
+
 rescaledStack=fcnRescale(stack(modisE,viirsE))
 modisE=rescaledStack[[grep(".1$",names(rescaledStack))]]
 viirsE=rescaledStack[[grep(".2$",names(rescaledStack))]]
@@ -182,97 +276,43 @@ ecocast=b
 
 
 #### standardize ####
-lbst1=lbst %>%  mutate(product="Leatherback")
-blshObs1=blshobs%>%  mutate(product="Blueshark - observer")
-casl1=casl%>%  mutate(product="Sea lion")
-swor1=swor%>%  mutate(product="Swordfish")
-blshtr1=blshtrk%>%  mutate(product="Blueshark - tracking")
-CHLA1=chla %>%  mutate(product="Chlorophyll")
-ECOCAST1=ecocast %>% mutate(product="EcoCast's fishing suitability")
+lbst1=lbst %>%  mutate(product="lbst")
+blshObs1=blshobs%>%  mutate(product="blshO")
+casl1=casl%>%  mutate(product="casl")
+swor1=swor%>%  mutate(product="swor")
+blshtr1=blshtrk%>%  mutate(product="blshT")
+CHLA1=chla %>%  mutate(product="Chl-a")
+ECOCAST1=ecocast %>% mutate(product="EcoCast")
 
-species=do.call("rbind",list(lbst1,blshObs1,casl1,swor1,blshtr1))  %>% mutate(product=as.factor(product)) %>% .[complete.cases(.),]
-chla_eco=do.call("rbind",list(CHLA1,ECOCAST1))  %>% mutate(product=as.factor(product)) %>% .[complete.cases(.),]
-
-### line plots ####
-ann_text <- data.frame(date = as.Date("2015-08-15"),chla = .1,lab = "Text",
-                       year = factor(2015,levels = c("2015","2016","2017","2018")))
-
-ann_rect_2017 <- data.frame(date = seq(as.Date("2017-08-01"),as.Date("2017-10-01"),by=1),chla = .1,lab = "Text",
-                       year = factor(2017,levels = c("2015","2016","2017","2018")))
-ann_rect_2018 <- data.frame(date = seq(as.Date("2018-08-01"),as.Date("2019-01-01"),by=1),chla = .1,lab = "Text",
-                       year = factor(2018,levels = c("2015","2016","2017","2018")))
-
-ann_text_2017 <- data.frame(date =as.Date("2017-09-13"),chla = .085,lab = "Text",
-                            year = factor(2017,levels = c("2015","2016","2017","2018")))
-ann_text_2018 <- data.frame(date = as.Date("2018-12-18"),chla = -.055,lab = "Text",
-                            year = factor(2018,levels = c("2015","2016","2017","2018")))
-
-
-
-lineplot_SP=ggplot(species,aes(x=date))+geom_line(aes(y=chla,group=product,color=product),size=.3)+geom_point(aes(y=chla,group=product,color=product),size=.4)+
-  scale_x_date(date_breaks="month",date_labels = "%b",date_minor_breaks = "months")+geom_hline(yintercept=0)+
-  scale_color_manual("Product",values=c("Leatherback"="#518ab1","Sea lion"="black","Swordfish"="coral1","Blueshark - observer"="#8d4138","Blueshark - tracking"="grey"))+
-  facet_grid(~year, scales="free")+labs(x="Month")+labs(y="MODIS minus VIIRS")+theme(legend.position=c(.24,.29),legend.justification = c(.9,.9))+
-  theme(axis.text = element_text(size=10),axis.title = element_text(size=10),legend.text=element_text(size=10),legend.title = element_text(size=10),strip.text.y = element_text(size = 10),strip.text.x = element_text(size = 10), strip.background = element_blank(),axis.text.x = element_text(angle=45))+
-  theme(legend.key.size = unit(.5,'lines'))+ylim(c(-.07,.1))+
-  geom_text(data=ann_text,aes(x=date,y=chla),label="B",size=4)+
-  geom_rect(data = ann_rect_2017,xmax=as.Date("2017-10-12"),xmin=as.Date("2017-09-01"),ymin=.032,ymax=.093,fill=NA,color="black")+
-  geom_rect(data = ann_rect_2018,xmax=as.Date("2018-11-01"),xmin=as.Date("2019-01-01"),ymin=(-.05),ymax=(-.025),fill=NA,color="black")+
-  geom_text(data=ann_text_2017,aes(x=date,y=chla),label="Box 1",size=4)+
-  geom_text(data=ann_text_2018,aes(x=date,y=chla),label="Box 2",size=4)
-
-lineplot_SP
-
-lineplot_chla_eco=ggplot(chla_eco,aes(x=date))+geom_line(aes(y=chla,group=product,color=product),size=.3)+geom_point(aes(y=chla,group=product,color=product),size=.4)+
-  scale_x_date(date_breaks="month",date_labels = "%b",date_minor_breaks = "months")+geom_hline(yintercept=0)+
-  scale_color_manual("Product",values=c("Chlorophyll"="#1a2977","EcoCast's fishing suitability"="#bfb939"))+
-  facet_grid(~year, scales="free")+labs(x="Month")+labs(y="MODIS minus VIIRS")+theme(legend.position=c(.29,.18),legend.justification = c(.9,.9))+
-  theme(axis.text = element_text(size=10),axis.title = element_text(size=10),legend.text=element_text(size=10),legend.title = element_text(size=10),strip.text.y = element_text(size = 10),strip.text.x = element_text(size = 10), strip.background = element_blank(),axis.text.x = element_text(angle=45))+
-  theme(legend.key.size = unit(.5,'lines'))+ylim(c(-.07,.1))+
-  geom_text(data=ann_text,aes(x=date,y=chla),label="A",size=4)
-
-lineplot_chla_eco
-
-datatype="lineplot"
-
-png(paste(outputDir,datatype,".png",sep=''),width=36,height=10,units='cm',res=400)
-par(ps=10)
-par(mar=c(4,4,1,1))
-par(cex=1)
-plot_grid(lineplot_chla_eco,lineplot_SP,nrow = 1,ncol = 2)
-dev.off()
-
-
-### histograms ####
-
-histtt_SP=ggplot(species,aes(x=chla,group=product))+geom_density(aes(fill=product),alpha=.4)+
-  geom_vline(xintercept=0,linetype="dashed")+
-  scale_fill_manual("Product",values=c("Leatherback"="#518ab1","Sea lion"="black","Swordfish"="coral1","Blueshark - observer"="#8d4138","Blueshark - tracking"="grey"))+
-  theme(legend.key.size = unit(.5,'lines'))+xlim(c(-.07,.1))+labs(x="MODIS minus VIIRS")+labs(y="Density")+
-  theme(legend.position=c(.5,.85))+annotate(geom = "text",x=-.07,y=130,label="B",size=4)+
-  theme(axis.text = element_text(size=10),axis.title = element_text(size=10),legend.text=element_text(size=10),legend.title = element_text(size=10),strip.text.y = element_text(size = 6),strip.text.x = element_text(size = 6), strip.background = element_blank())
-
-
-histtt_SP
-
-histtt_chla_eco=ggplot(chla_eco,aes(x=chla,group=product))+geom_density(aes(fill=product),alpha=.4)+
-  geom_vline(xintercept=0,linetype="dashed")+
-  scale_fill_manual("Product",values=c("Chlorophyll"="#1a2977","EcoCast's fishing suitability"="#bfb939"))+
-  theme(legend.key.size = unit(.5,'lines'))+xlim(c(-.07,.1))+labs(x="MODIS minus VIIRS")+labs(y="Density")+
-  theme(legend.position=c(.55,.9))+annotate(geom = "text",x=-.07,y=40,label="A",size=4)+
-  theme(axis.text = element_text(size=10),axis.title = element_text(size=10),legend.text=element_text(size=10),legend.title = element_text(size=10),strip.text.y = element_text(size = 6),strip.text.x = element_text(size = 6), strip.background = element_blank())
-
-histtt_chla_eco
-
-datatype="histogram"
-
-png(paste(outputDir,datatype,".png",sep=''),width=20,height=10,units='cm',res=400)
-par(ps=10)
-par(mar=c(4,4,1,1))
-par(cex=1)
-plot_grid(histtt_chla_eco,histtt_SP,nrow = 1,ncol = 2)
-dev.off()
-
-master=rbind(chla_eco,species)
+master=do.call("rbind",list(lbst1,blshObs1,casl1,swor1,blshtr1,CHLA1,ECOCAST1)) #%>% .[complete.cases(.),]
+master$product=as.factor(master$product)
 mean_diff=master %>% mutate(chl2=chla)%>% group_by(product) %>% summarise(mean(chl2,na.rm=T))
 mean_diff_abs=master %>% mutate(chl2=abs(chla))%>% group_by(product) %>% summarise(mean(chl2,na.rm=T))
+
+###clean up aovs####
+a=summary(lbst_aov)[[1]]%>% as.data.frame(.) %>% .[1,4:5] %>% t() %>% as.data.frame() %>% mutate(stat=rownames(.)) %>% rename("mean"="sensor     ") %>% mutate("product"="lbst")
+b=summary(blshobs_aov)[[1]]%>% as.data.frame(.) %>% .[1,4:5] %>% t() %>% as.data.frame() %>% mutate(stat=rownames(.)) %>% rename("mean"="sensor     ") %>% mutate("product"="blshO")
+c=summary(swor_aov)[[1]]%>% as.data.frame(.) %>% .[1,4:5] %>% t() %>% as.data.frame() %>% mutate(stat=rownames(.)) %>% rename("mean"="sensor     ") %>% mutate("product"="swor")
+d=summary(casl_aov)[[1]]%>% as.data.frame(.) %>% .[1,4:5] %>% t() %>% as.data.frame() %>% mutate(stat=rownames(.)) %>% rename("mean"="sensor     ") %>% mutate("product"="casl")
+e=summary(blshtr_aov)[[1]]%>% as.data.frame(.) %>% .[1,4:5] %>% t() %>% as.data.frame() %>% mutate(stat=rownames(.)) %>% rename("mean"="sensor     ") %>% mutate("product"="blshT")
+f=summary(eco_aov)[[1]]%>% as.data.frame(.) %>% .[1,4:5] %>% t() %>% as.data.frame() %>% mutate(stat=rownames(.)) %>% rename("mean"="sensor     ") %>% mutate("product"="Chl-a") 
+g=summary(chla_aov)[[1]]%>% as.data.frame(.) %>% .[1,4:5] %>% t() %>% as.data.frame() %>% mutate(stat=rownames(.)) %>% rename("mean"="sensor     ") %>% mutate("product"="EcoCast") 
+
+sig=do.call("rbind",list(a,b,c,d,e,f,g))
+
+####
+
+
+### summary table ----------------------------------------------------> ####
+a=mean_diff %>% dplyr::rename(mean=`mean(chl2, na.rm = T)`) %>% mutate(stat="mean_diff") %>% mutate(product=as.character(product)) %>% as.data.frame()
+b=mean_diff_abs %>% dplyr::rename(mean=`mean(chl2, na.rm = T)`) %>% mutate(stat="mean_diff_abs") %>% mutate(product=as.character(product)) %>% as.data.frame()
+c=mean_influence %>% dplyr::rename(product=species) %>% select(-var) %>% mutate(stat="mean_influence")%>% as.data.frame()
+
+d=do.call("rbind",list(a,b,c,sig))
+e=d %>% spread(stat,mean)
+
+outputDir="/Users/heatherwelch/Dropbox/JPSS/plots_04.14.19/"
+write.csv(e,paste(outputDir,"summaryTable_test.csv"))
+
+d=rbind(a,b)
+d=rbind(d,c)
