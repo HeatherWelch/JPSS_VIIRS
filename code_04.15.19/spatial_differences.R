@@ -57,6 +57,7 @@ v_df=v_df[v_df$date %in% as.Date(to_match),]
 
 master=do.call("rbind",list(m_df,v_df)) 
 master$sensor=as.factor(master$sensor)
+master$chla=master$chla*.4343 
 chla_scatter=master %>% spread(sensor,chla)
 
 ### colored/shaped by month and year. not doing this for the moment
@@ -66,8 +67,8 @@ chla_scatter=master %>% spread(sensor,chla)
 #   theme(legend.key.size = unit(.5,'lines'),legend.position=c(.1,.8))
 # a
 
-a=ggplot(chla_scatter,aes(x=MODIS,y=VIIRS))+geom_point(shape=1)+geom_abline(slope=1,intercept = 0,color="blue")+xlim(-2,-.44)+ylim(-2,-.44)+stat_smooth(method="lm",se = F,linetype="dashed",color="blue")+
-  ylab("VIIRS chlorophyll (mg^3)")+xlab("MODIS chlorophyll (mg^3)")+
+a=ggplot(chla_scatter,aes(x=MODIS,y=VIIRS))+geom_point(shape=1)+geom_abline(slope=1,intercept = 0,color="blue")+xlim(-.8,-.15)+ylim(-.8,-.15)+stat_smooth(method="lm",se = F,linetype="dashed",color="blue")+
+  ylab("log VIIRS chlorophyll (mg m-3)")+xlab("log MODIS chlorophyll (mg m-3)")+
   theme(legend.key.size = unit(.5,'lines'),legend.position=c(.1,.8))+
   theme(axis.text = element_text(size=10),axis.title = element_text(size=10),legend.text=element_text(size=10),legend.title = element_text(size=10),strip.text.y = element_text(size = 6),strip.text.x = element_text(size = 6), strip.background = element_blank())
 scatterplot=a
@@ -90,7 +91,7 @@ viirsDir="/Users/heatherwelch/Dropbox/JPSS/viirs_8Day/Satellite_mask"
 #1. time series of spatial average, just mean 
 
 modisE=list.files(modisDir,full.names = T,recursive = T,pattern = ".grd")%>% grep("2016-10-11",.,invert=T,value=T)
-modisE=unique (grep(paste(to_match_date,collapse="|"),modisE, value=TRUE)) %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea))
+modisE=unique (grep(paste(to_match_date,collapse="|"),modisE, value=TRUE)) %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea)) 
 
 viirsE=list.files(viirsDir,full.names = T,recursive = T,pattern = ".grd")%>% grep("2016-09-07",.,invert=T,value=T) 
 viirsE=unique (grep(paste(to_match_date,collapse="|"),viirsE, value=TRUE)) %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea))
@@ -109,7 +110,8 @@ PlotPNGs<-function(stack,datatype,outputDir){
 
     col=ChlorCols(255)
   
-  stackM=stack %>% raster::calc(.,fun=mean,na.rm=T)
+  stackM=stack %>% raster::calc(.,fun=mean,na.rm=T) 
+  stackM=stackM*.4343
   H=maxValue(stackM) %>% max(na.rm=T)
   L=minValue(stackM) %>% min(na.rm=T)
   zlimits=c(L,H)
@@ -117,8 +119,8 @@ PlotPNGs<-function(stack,datatype,outputDir){
   # image.plot(stackM,col=col,xlim=c(-130,-115),ylim=c(30,47),zlim=zlimits,legend.args = list(text="mg/m3",cex=1.5, side=3, line=0,adj=-.1))
   image.plot(stackM,col=col,xlim=c(-130,-115),ylim=c(30,47),zlim=zlimits)
   maps::map('worldHires',add=TRUE,col=grey(0.7),fill=TRUE)
-  contour(stackM, add=TRUE, col="black",levels=c(-1.14),labcex = 1,lwd=2)
-  text(-122,45,datatype,adj=c(0,0),cex=1)
+  contour(stackM, add=TRUE, col="black",levels=c(-.51),labcex = 1,lwd=2)
+  text(-123.5,45,datatype,adj=c(0,0),cex=1)
   
   
   box()
@@ -127,7 +129,7 @@ PlotPNGs<-function(stack,datatype,outputDir){
 }
 
 PlotPNGs(stack=modisE,datatype = "MODIS chlorophyll",outputDir = outputDir)
-PlotPNGs(stack=viirsE,datatype = "VIIRS chlorophyll",outputDir = outputDir)
+PlotPNGs(stack=viirsE,datatype = "log VIIRS chlorophyll (mg m-3)",outputDir = outputDir)
 
 
 #3. spatial differences ####
@@ -229,7 +231,7 @@ PlotPNGs_difference<-function(stack,product,outputDir,H,L,countour_ras){
   maps::map('worldHires',add=TRUE,col=grey(0.7),fill=TRUE)
   points(plusSD,cex=5,pch = ".")
   points(minusSD,cex=5,pch = ".")
-  contour(countour_ras, add=TRUE, col="black",levels=c(-1.14),labcex = 1,lwd=2)
+  contour(countour_ras, add=TRUE, col="black",levels=c(-.51),labcex = 1,lwd=2)
   text(-123.5,45,product,adj=c(0,0),cex=1)
   
   box()
@@ -241,7 +243,7 @@ PlotPNGs_difference<-function(stack,product,outputDir,H,L,countour_ras){
 viirsDir="/Users/heatherwelch/Dropbox/JPSS/viirs_8Day/Satellite_mask"
 viirsE=list.files(viirsDir,full.names = T,recursive = T,pattern = ".grd")%>% grep("2016-09-07",.,invert=T,value=T) 
 countour_ras=unique (grep(paste(to_match_date,collapse="|"),viirsE, value=TRUE)) %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea))%>% calc(.,fun=mean,na.rm=T)
-
+countour_ras=countour_ras*.4343
 
 PlotPNGs_difference(stack = chla,product = "Chlorophyll",outputDir = outputDir,H=H,L=L,countour_ras = countour_ras)
 PlotPNGs_difference(stack = swor,product = "Swordfish",outputDir = outputDir,H=H,L=L,countour_ras = countour_ras)

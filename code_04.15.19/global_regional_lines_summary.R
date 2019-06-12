@@ -8,7 +8,7 @@ norA=read.csv("/Users/heatherwelch/Dropbox/JPSS/global/north_atlantic_csvs_mask/
 SEA=read.csv("/Users/heatherwelch/Dropbox/JPSS/global/SE_Asia_csvs_mask/All_products_4km_SE_A_log_mask.csv") %>% mutate(date=as.Date(date)) %>% mutate(region="Southeast Asia")
 
 
-master=do.call("rbind",list(global,EP,norA,SEA)) %>% group_by(region,sensor) %>% summarise(mean=mean(mean)) %>% as.data.frame()
+master=do.call("rbind",list(global,EP,norA,SEA)) %>% mutate(mean=mean*.4343) %>% group_by(region,sensor) %>% summarise(mean=mean(mean)) %>% as.data.frame()
 master2=do.call("rbind",list(global,EP,norA,SEA)) %>% group_by(region,sensor) %>% summarise(sd=sd(mean))%>% as.data.frame()
 master3=master %>% mutate(sd=master2$sd) %>% mutate(cv=sd/mean)
 

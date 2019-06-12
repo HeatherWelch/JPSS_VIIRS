@@ -252,6 +252,12 @@ histtt_SP=ggplot(species,aes(x=chla,group=product))+geom_density(aes(fill=produc
   theme(legend.position=c(.5,.85))+annotate(geom = "text",x=-.07,y=130,label="B",size=4)+
   theme(axis.text = element_text(size=10),axis.title = element_text(size=10),legend.text=element_text(size=10),legend.title = element_text(size=10),strip.text.y = element_text(size = 6),strip.text.x = element_text(size = 6), strip.background = element_blank())
 
+# histtt_SPa=ggplot(species,aes(x=chla,group=product))+geom_density(aes(color=product),alpha=.4,size=.7)+
+#   geom_vline(xintercept=0,linetype="dashed")+
+#   scale_color_manual("Product",values=c("Leatherback"="#518ab1","Sea lion"="black","Swordfish"="coral1","Blueshark - observer"="#8d4138","Blueshark - tracking"="grey"))+
+#   theme(legend.key.size = unit(.5,'lines'))+xlim(c(-.07,.1))+labs(x="MODIS minus VIIRS")+labs(y="Density")+
+#   theme(legend.position=c(.5,.85))+annotate(geom = "text",x=-.07,y=130,label="B",size=4)+
+#   theme(axis.text = element_text(size=10),axis.title = element_text(size=10),legend.text=element_text(size=10),legend.title = element_text(size=10),strip.text.y = element_text(size = 6),strip.text.x = element_text(size = 6), strip.background = element_blank())
 
 histtt_SP
 
@@ -264,13 +270,14 @@ histtt_chla_eco=ggplot(chla_eco,aes(x=chla,group=product))+geom_density(aes(fill
 
 histtt_chla_eco
 
-datatype="histogram"
+datatype="histogram_line"
 
 png(paste(outputDir,datatype,".png",sep=''),width=20,height=10,units='cm',res=400)
 par(ps=10)
 par(mar=c(4,4,1,1))
 par(cex=1)
 plot_grid(histtt_chla_eco,histtt_SP,nrow = 1,ncol = 2)
+#plot_grid(histtt_SPa,histtt_SP,nrow = 1,ncol = 2)
 dev.off()
 
 master=rbind(chla_eco,species)

@@ -108,6 +108,10 @@ cc$x=bb$meanx
 
 #### swor ####
 
+mult_format <- function() {
+  function(x) format(.4343*x,digits = 2) 
+}
+
 swor=bb %>% filter(species=="swor")
 swor_ribbon=cc %>% filter(species=="swor")
 curve=left_join(swor,swor_ribbon) %>% gather(thing,value,-c(species,id,x,meanx)) %>% mutate(value=scales::rescale(value,c(0,1))) %>% spread(thing,value)
@@ -120,8 +124,9 @@ e=d+geom_ribbon(data=curve,aes(x=x,ymin=minx,ymax=maxy),fill="darkgrey",alpha=.6
   theme(legend.key.size = unit(.5,'lines'))
 f=e+geom_line(data=curve,aes(x=meanx,y=meany),color="Red")
 f=f+geom_vline(xintercept=-2,linetype="dashed")+geom_vline(xintercept=0,linetype="dashed")
-f=f+ylab("Scaled chlorophyll influence and density distribution")+xlab("Chlorophyll (mg/m3)")+theme(legend.position=c(.12,.9),legend.justification = c(.9,.9))+
+f=f+ylab("Scaled chlorophyll influence and density distribution")+xlab("log chlorophyll (mg m-3)")+theme(legend.position=c(.12,.9),legend.justification = c(.9,.9))+
   geom_text(aes(x=-4,y=1),label="A",size=4)
+f=f+scale_x_continuous(labels=mult_format())
 swordfish=f
 
 # outputDir="/Users/heatherwelch/Dropbox/JPSS/plots_04.14.19/"
@@ -147,8 +152,9 @@ e=d+geom_ribbon(data=curve,aes(x=x,ymin=minx,ymax=maxy),fill="darkgrey",alpha=.6
   theme(legend.key.size = unit(.5,'lines'))
 f=e+geom_line(data=curve,aes(x=meanx,y=meany),color="Red")
 f=f+geom_vline(xintercept=2,linetype="dashed")+geom_vline(xintercept=0,linetype="dashed")
-f=f+ylab("Scaled chlorophyll influence and density distribution")+xlab("Chlorophyll (mg/m3)")+theme(legend.position=c(.12,.9),legend.justification = c(.9,.9))+
+f=f+ylab("Scaled chlorophyll influence and density distribution")+xlab("log chlorophyll (mg m-3)")+theme(legend.position=c(.12,.9),legend.justification = c(.9,.9))+
   geom_text(aes(x=-3,y=1),label="B",size=4)
+f=f+scale_x_continuous(labels=mult_format())
 casl=f
 
 # outputDir="/Users/heatherwelch/Dropbox/JPSS/plots_04.14.19/"
@@ -174,8 +180,9 @@ e=d+geom_ribbon(data=curve,aes(x=x,ymin=minx,ymax=maxy),fill="darkgrey",alpha=.6
   theme(legend.key.size = unit(.5,'lines'))
 f=e+geom_line(data=curve,aes(x=meanx,y=meany),color="Red")
 f=f+geom_vline(xintercept=-2.5,linetype="dashed")+geom_vline(xintercept=-.8,linetype="dashed")
-f=f+ylab("Scaled chlorophyll influence and density distribution")+xlab("Chlorophyll (mg/m3)")+theme(legend.position=c(.9,.2),legend.justification = c(.9,.9))+
+f=f+ylab("Scaled chlorophyll influence and density distribution")+xlab("log chlorophyll (mg m-3)")+theme(legend.position=c(.9,.2),legend.justification = c(.9,.9))+
   geom_text(aes(x=3,y=1),label="C",size=4)
+f=f+scale_x_continuous(labels=mult_format())
 lbst=f
 
 # outputDir="/Users/heatherwelch/Dropbox/JPSS/plots_04.14.19/"
