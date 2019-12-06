@@ -78,3 +78,35 @@ for(nc in netcdf){
   writeRaster(r1,glue("{save_dir}/l.blendChl"),overwrite=T)
 }
 
+
+#### oc-cci 2015 - 2018; 1 day ####
+OCdir="/Users/heatherwelch/Dropbox/JPSS/oc_cci_1Day/";dir.create(OCdir)
+netcdf_dir="/Users/heatherwelch/Dropbox/JPSS/oc_cci_netcdf_1Day"
+output_dir="/Users/heatherwelch/Dropbox/JPSS/oc_cci_1Day/Satellite";dir.create(output_dir)
+
+a=seq(as.Date("2015-07-20"),as.Date("2016-01-10"),by=1) %>% as.character()
+b=seq(as.Date("2016-07-20"),as.Date("2017-01-10"),by=1)%>% as.character()
+c=seq(as.Date("2017-07-20"),as.Date("2018-01-10"),by=1)%>% as.character()
+d=seq(as.Date("2018-07-20"),as.Date("2019-01-10"),by=1)%>% as.character()
+
+dates=list(a,b,c,d) %>% unlist()
+
+netcdf=list.files(netcdf_dir,pattern="*ESACCI-OC-L3S-CHLOR_A*",full.names = T)
+template_native=raster(netcdf[1])
+
+for(nc in netcdf){
+  date=substr(nc,107,114) %>% as.Date(format="%Y%m%d")
+  print(date)
+  save_dir=glue("{output_dir}/{date}")
+  print(save_dir)
+  if(as.character(date) %in% dates && file.exists(save_dir)==F){
+  a=raster(nc,var="chlor_a")
+  aa=crop(a,template)
+  r=raster::resample(aa,template,field=n,fun=mean)
+  r1=log(r+0.001)
+  dir.create(save_dir)
+  writeRaster(r1,glue("{save_dir}/l.blendChl"),overwrite=T)
+  print("wrote out")
+  }
+}
+
