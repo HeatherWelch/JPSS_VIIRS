@@ -6,15 +6,17 @@
 #5. swordifish difference
 #6. ecocast difference
 
-outputDir="/Users/heatherwelch/Dropbox/JPSS/plots_04.14.19/"
+outputDir="/Users/heatherwelch/Dropbox/JPSS/plots_12.01.19/"
 
 library(scales)
 source("/Users/heatherwelch/Dropbox/JPSS/JPSS_VIIRS/code/load_functions.R")
 library(plotly)
+library(sf)
+library(glue)
 
-path = "/Volumes/EcoCast_SeaGate/ERD_DOM/EcoCast_CodeArchive"
-staticdir=paste0(path,"/static_variables/")
-studyarea=readOGR(dsn=staticdir,layer="sa_square_coast3")
+studyarea=st_read(glue("{staticdir}sa_square_coast3.shp"))
+studyarea <- sf:::st_zm(studyarea$geom)
+studyarea=as(studyarea, "Spatial")
 
 fcnRescale=function(i){
   a <- (i - min(i[], na.rm=TRUE))/(max(i[], na.rm=TRUE)-min(i[], na.rm=TRUE))
@@ -67,10 +69,14 @@ chla_scatter=master %>% spread(sensor,chla)
 #   theme(legend.key.size = unit(.5,'lines'),legend.position=c(.1,.8))
 # a
 
+lab(bquote("log chlorophyll (mg "*~m^-3*")"))+
+
 a=ggplot(chla_scatter,aes(x=MODIS,y=VIIRS))+geom_point(shape=1)+geom_abline(slope=1,intercept = 0,color="blue")+xlim(-.8,-.15)+ylim(-.8,-.15)+stat_smooth(method="lm",se = F,linetype="dashed",color="blue")+
-  ylab("log VIIRS chlorophyll (mg m-3)")+xlab("log MODIS chlorophyll (mg m-3)")+
+  ylab(bquote("log VIIRS chlorophyll (mg "*~m^-3*")"))+xlab(bquote("log MODIS chlorophyll (mg "*~m^-3*")"))+
   theme(legend.key.size = unit(.5,'lines'),legend.position=c(.1,.8))+
-  theme(axis.text = element_text(size=10),axis.title = element_text(size=10),legend.text=element_text(size=10),legend.title = element_text(size=10),strip.text.y = element_text(size = 6),strip.text.x = element_text(size = 6), strip.background = element_blank())
+  theme(axis.text = element_text(size=14),axis.title = element_text(size=14),legend.text=element_text(size=14),legend.title = element_text(size=14),strip.text.y = element_text(size = 6),strip.text.x = element_text(size = 6))+theme(panel.background = element_blank(),legend.key=element_blank())+
+  theme(axis.line.x = element_line(color="black", size = 1),
+        axis.line.y = element_line(color="black", size = 1))
 scatterplot=a
 scatterplot
 
@@ -110,17 +116,17 @@ PlotPNGs<-function(stack,datatype,outputDir){
 
     col=ChlorCols(255)
   
-  stackM=stack %>% raster::calc(.,fun=mean,na.rm=T) 
+  stackM=stack %>% mean(.,na.rm=T) 
   stackM=stackM*.4343
   H=maxValue(stackM) %>% max(na.rm=T)
   L=minValue(stackM) %>% min(na.rm=T)
   zlimits=c(L,H)
   
   # image.plot(stackM,col=col,xlim=c(-130,-115),ylim=c(30,47),zlim=zlimits,legend.args = list(text="mg/m3",cex=1.5, side=3, line=0,adj=-.1))
-  image.plot(stackM,col=col,xlim=c(-130,-115),ylim=c(30,47),zlim=zlimits)
+  image.plot(stackM,col=col,xlim=c(-130,-115),ylim=c(30,47),zlim=zlimits,cex.axis=1.8,axis.args=list(cex.axis=1.8))
   maps::map('worldHires',add=TRUE,col=grey(0.7),fill=TRUE)
   contour(stackM, add=TRUE, col="black",levels=c(-.51),labcex = 1,lwd=2)
-  text(-123.5,45,datatype,adj=c(0,0),cex=1)
+  text(-123.5,45,datatype,adj=c(0,0),cex=1.2)
   
   
   box()
@@ -196,7 +202,7 @@ ecocast=modisE-viirsE
 
 #### plot all ####
 
-plotting=stack(calc(chla,mean,na.rm=T),calc(swor,mean,na.rm=T),calc(blshtrk,mean,na.rm=T),calc(ecocast,mean,na.rm=T))
+plotting=stack(mean(chla,na.rm=T),mean(swor,na.rm=T),mean(blshtrk,na.rm=T),mean(ecocast,na.rm=T))
 H=max(plotting[],na.rm=T)
 L=min(plotting[],na.rm=T)
 
@@ -204,7 +210,7 @@ PlotPNGs_difference<-function(stack,product,outputDir,H,L,countour_ras){
   
   col=colorRamps:::blue2red(255)
   
-  stackM=stack %>% calc(.,mean,na.rm=T)
+  stackM=stack %>% mean(.,na.rm=T)
   
   Labs=abs(L)
   both=c(H,Labs)
@@ -220,19 +226,19 @@ PlotPNGs_difference<-function(stack,product,outputDir,H,L,countour_ras){
   
   #### MODIS - VIIRS ####
   
-  stackSD=stack %>% calc(.,mean,na.rm=T) %>% cellStats(.,sd)
-  stackMP=stackM%>% cellStats(.,mean)
+  stackSD=stack %>% mean(.,na.rm=T) %>% cellStats(.,sd)
+  stackMP=cellStats(stackM,stat="mean")
   #postive=stackM[stackM>(stackM+stackSD)]
   
   plusSD=rasterToPoints(stackM,fun=function(x)x>(stackMP+stackSD))
   minusSD=rasterToPoints(stackM,fun=function(x)x<(stackMP-stackSD))
   
-  image.plot(stackM,col=col,xlim=c(-130,-115),ylim=c(30,47),zlim=zlimits,legend.cex=.5)
+  image.plot(stackM,col=col,xlim=c(-130,-115),ylim=c(30,47),zlim=zlimits,cex.axis=1.8,axis.args=list(cex.axis=1.8))
   maps::map('worldHires',add=TRUE,col=grey(0.7),fill=TRUE)
   points(plusSD,cex=5,pch = ".")
   points(minusSD,cex=5,pch = ".")
   contour(countour_ras, add=TRUE, col="black",levels=c(-.51),labcex = 1,lwd=2)
-  text(-123.5,45,product,adj=c(0,0),cex=1)
+  text(-123.5,45,product,adj=c(0,0),cex=1.2)
   
   box()
   dev.off()
@@ -242,7 +248,7 @@ PlotPNGs_difference<-function(stack,product,outputDir,H,L,countour_ras){
 
 viirsDir="/Users/heatherwelch/Dropbox/JPSS/viirs_8Day/Satellite_mask"
 viirsE=list.files(viirsDir,full.names = T,recursive = T,pattern = ".grd")%>% grep("2016-09-07",.,invert=T,value=T) 
-countour_ras=unique (grep(paste(to_match_date,collapse="|"),viirsE, value=TRUE)) %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea))%>% calc(.,fun=mean,na.rm=T)
+countour_ras=unique (grep(paste(to_match_date,collapse="|"),viirsE, value=TRUE)) %>% stack() %>%mask(.,studyarea) %>% crop(.,extent(studyarea))%>% mean(.,na.rm=T)
 countour_ras=countour_ras*.4343
 
 PlotPNGs_difference(stack = chla,product = "Chlorophyll",outputDir = outputDir,H=H,L=L,countour_ras = countour_ras)
