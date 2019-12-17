@@ -126,7 +126,7 @@ PlotPNGs<-function(stack,datatype,outputDir){
   image.plot(stackM,col=col,xlim=c(-130,-115),ylim=c(30,47),zlim=zlimits,cex.axis=1.8,axis.args=list(cex.axis=1.8))
   maps::map('worldHires',add=TRUE,col=grey(0.7),fill=TRUE)
   contour(stackM, add=TRUE, col="black",levels=c(-.51),labcex = 1,lwd=2)
-  text(-123.5,45,datatype,adj=c(0,0),cex=1.2)
+  text(-123.5,45,datatype,adj=c(0,0),cex=1)
   
   
   box()
@@ -238,7 +238,7 @@ PlotPNGs_difference<-function(stack,product,outputDir,H,L,countour_ras){
   points(plusSD,cex=5,pch = ".")
   points(minusSD,cex=5,pch = ".")
   contour(countour_ras, add=TRUE, col="black",levels=c(-.51),labcex = 1,lwd=2)
-  text(-123.5,45,product,adj=c(0,0),cex=1.2)
+  text(-123.5,45,product,adj=c(0,0),cex=1)
   
   box()
   dev.off()

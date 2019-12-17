@@ -145,7 +145,7 @@ PlotPNGs_difference<-function(stack,product,outputDir,H,L,countour_ras){
   plusSD=rasterToPoints(stackM,fun=function(x)x>(stackMP+stackSD))
   minusSD=rasterToPoints(stackM,fun=function(x)x<(stackMP-stackSD))
   
-  image.plot(stackM,col=col,xlim=c(-130,-115),ylim=c(30,47),zlim=zlimits,legend.cex=.5)
+  image.plot(stackM,col=col,xlim=c(-130,-115),ylim=c(30,47),zlim=zlimits,cex.axis=1.8,axis.args=list(cex.axis=1.8))
   maps::map('worldHires',add=TRUE,col=grey(0.7),fill=TRUE)
   points(plusSD,cex=5,pch = ".")
   points(minusSD,cex=5,pch = ".")
