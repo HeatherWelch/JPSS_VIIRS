@@ -110,3 +110,35 @@ for(nc in netcdf){
   }
 }
 
+
+#### NASA modis 2015 - 2018; 1 day ####
+OCdir="/Users/heatherwelch/Dropbox/JPSS/viirsNASA_8Day/";dir.create(OCdir)
+netcdf_dir="/Users/heatherwelch/Dropbox/JPSS/viirsNASA_netcdf"
+output_dir="/Users/heatherwelch/Dropbox/JPSS/viirsNASA_8Day/Satellite";dir.create(output_dir)
+
+a=seq(as.Date("2015-07-20"),as.Date("2016-01-10"),by=1) %>% as.character()
+b=seq(as.Date("2016-07-20"),as.Date("2017-01-10"),by=1)%>% as.character()
+c=seq(as.Date("2017-07-20"),as.Date("2018-01-10"),by=1)%>% as.character()
+d=seq(as.Date("2018-07-20"),as.Date("2019-01-10"),by=1)%>% as.character()
+
+dates=list(a,b,c,d) %>% unlist()
+
+netcdf=list.files(netcdf_dir,pattern="*erdVH2018chla8day*",full.names = T)
+template_native=raster(netcdf[1])
+
+for(nc in netcdf){
+  date=substr(nc,69,78) %>% as.Date(format="%Y-%m-%d")
+  print(date)
+  save_dir=glue("{output_dir}/{date}")
+  print(save_dir)
+  if(as.character(date) %in% dates && file.exists(save_dir)==F){
+    a=raster(nc,var="chla")
+    aa=crop(a,template)
+    r=raster::resample(aa,template,field=n,fun=mean)
+    r1=log(r+0.001)
+    dir.create(save_dir)
+    writeRaster(r1,glue("{save_dir}/l.blendChl"),overwrite=T)
+    print("wrote out")
+  }
+}
+
