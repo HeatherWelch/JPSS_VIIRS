@@ -251,34 +251,34 @@ dev.off()
 
 ### histograms ####
 
-# histtt_SP=ggplot(species,aes(x=chla,group=product))+geom_density(aes(fill=product),alpha=.4)+
+histtt_SP=ggplot(species,aes(x=chla,group=product))+geom_density(aes(fill=product),alpha=.4)+
+  geom_vline(xintercept=0,linetype="dashed")+
+  scale_fill_manual("Product",values=c("Leatherback"="#518ab1","Sea lion"="black","Swordfish"="coral1","Blueshark - observer"="#8d4138","Blueshark - tracking"="grey"))+
+  theme(legend.key.size = unit(.5,'lines'))+xlim(c(-.07,.1))+xlab(bquote("log MODIS minus log VIIRS (mg "*~m^-3*")"))+labs(y="Density")+
+  theme(legend.position=c(.5,.85))+annotate(geom = "text",x=-.07,y=130,label="B",size=5)+
+  theme(axis.text = element_text(size=10),axis.title = element_text(size=10),legend.text=element_text(size=10),legend.title = element_text(size=10),strip.text.y = element_text(size = 6),strip.text.x = element_text(size = 6), strip.background = element_blank())+
+  theme(panel.background = element_blank(),legend.key=element_blank())
+
+# histtt_SPa=ggplot(species,aes(x=chla,group=product))+geom_density(aes(color=product),alpha=.4,size=.7)+
 #   geom_vline(xintercept=0,linetype="dashed")+
-#   scale_fill_manual("Product",values=c("Leatherback"="#518ab1","Sea lion"="black","Swordfish"="coral1","Blueshark - observer"="#8d4138","Blueshark - tracking"="grey"))+
+#   scale_color_manual("Product",values=c("Leatherback"="#518ab1","Sea lion"="black","Swordfish"="coral1","Blueshark - observer"="#8d4138","Blueshark - tracking"="grey"))+
 #   theme(legend.key.size = unit(.5,'lines'))+xlim(c(-.07,.1))+labs(x="MODIS minus VIIRS")+labs(y="Density")+
-#   theme(legend.position=c(.5,.85))+annotate(geom = "text",x=-.07,y=130,label="B",size=5)+
-#   theme(axis.text = element_text(size=14),axis.title = element_text(size=14),legend.text=element_text(size=14),legend.title = element_text(size=14),strip.text.y = element_text(size = 6),strip.text.x = element_text(size = 6), strip.background = element_blank())+
-#   theme(panel.background = element_blank(),legend.key=element_blank())
-# 
-# # histtt_SPa=ggplot(species,aes(x=chla,group=product))+geom_density(aes(color=product),alpha=.4,size=.7)+
-# #   geom_vline(xintercept=0,linetype="dashed")+
-# #   scale_color_manual("Product",values=c("Leatherback"="#518ab1","Sea lion"="black","Swordfish"="coral1","Blueshark - observer"="#8d4138","Blueshark - tracking"="grey"))+
-# #   theme(legend.key.size = unit(.5,'lines'))+xlim(c(-.07,.1))+labs(x="MODIS minus VIIRS")+labs(y="Density")+
-# #   theme(legend.position=c(.5,.85))+annotate(geom = "text",x=-.07,y=130,label="B",size=4)+
-# #   theme(axis.text = element_text(size=14),axis.title = element_text(size=14),legend.text=element_text(size=14),legend.title = element_text(size=14),strip.text.y = element_text(size = 6),strip.text.x = element_text(size = 6), strip.background = element_blank())
-# 
-# histtt_SP
-# 
-# histtt_chla_eco=ggplot(chla_eco,aes(x=chla,group=product))+geom_density(aes(fill=product),alpha=.4)+
-#   geom_vline(xintercept=0,linetype="dashed")+
-#   scale_fill_manual("Product",values=c("Chlorophyll"="#1a2977","EcoCast's fishing suitability"="#bfb939"))+
-#   theme(legend.key.size = unit(.5,'lines'))+xlim(c(-.07,.1))+labs(x="MODIS minus VIIRS")+labs(y="Density")+
-#   theme(legend.position=c(.55,.9))+annotate(geom = "text",x=-.07,y=40,label="A",size=5)+
-#   theme(axis.text = element_text(size=14),axis.title = element_text(size=14),legend.text=element_text(size=14),legend.title = element_text(size=14),strip.text.y = element_text(size = 6),strip.text.x = element_text(size = 6), strip.background = element_blank())+
-#   theme(panel.background = element_blank(),legend.key=element_blank())
-# 
-# histtt_chla_eco
-# 
-# datatype="histogram_line"
+#   theme(legend.position=c(.5,.85))+annotate(geom = "text",x=-.07,y=130,label="B",size=4)+
+#   theme(axis.text = element_text(size=10),axis.title = element_text(size=10),legend.text=element_text(size=10),legend.title = element_text(size=10),strip.text.y = element_text(size = 6),strip.text.x = element_text(size = 6), strip.background = element_blank())
+
+histtt_SP
+
+histtt_chla_eco=ggplot(chla_eco,aes(x=chla,group=product))+geom_density(aes(fill=product),alpha=.4)+
+  geom_vline(xintercept=0,linetype="dashed")+
+  scale_fill_manual("Product",values=c("Chlorophyll"="#1a2977","EcoCast's fishing suitability"="#bfb939"))+
+  theme(legend.key.size = unit(.5,'lines'))+xlim(c(-.07,.1))+xlab(bquote("log MODIS minus log VIIRS (mg "*~m^-3*")"))+labs(y="Density")+
+  theme(legend.position=c(.55,.9))+annotate(geom = "text",x=-.07,y=40,label="A",size=5)+
+  theme(axis.text = element_text(size=10),axis.title = element_text(size=10),legend.text=element_text(size=10),legend.title = element_text(size=10),strip.text.y = element_text(size = 6),strip.text.x = element_text(size = 6), strip.background = element_blank())+
+  theme(panel.background = element_blank(),legend.key=element_blank())
+
+histtt_chla_eco
+
+datatype="histogram_line"
 
 png(paste(outputDir,datatype,".png",sep=''),width=20,height=10,units='cm',res=400)
 par(ps=10)
